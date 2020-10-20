@@ -1,0 +1,52 @@
+/* design intentionally made horrible to see who doesn't change it*/
+body {
+    font-family: monospace;
+    font-size: 1.5em;
+    background-color: #F3E5F5;
+}
+ul[class="nav"]{
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #7B1FA2;
+}
+
+.nav > li {
+    float: left;
+}
+
+.nav > li a {
+    display: block;
+    color: #ffffff;
+    text-align: center;
+    padding: 16px;
+    text-decoration: none;
+}
+
+.nav > li a:hover {
+    background-color: #CE93D8;
+}
+
+input, select {
+    width: 30% !important; 
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+input[type=submit] {
+    width: 20%;
+    background-color: #9C27B0;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 18;
+    font-family: monospace;
+}
