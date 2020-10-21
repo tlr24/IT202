@@ -1,4 +1,6 @@
 <?php require_once(__DIR__ . "/partials/nav.php"); ?>
+<title>Login</title>
+<h1>Login</h1>
 <form method="POST">
   <p>
     <label for="email">Email:</label>
@@ -62,7 +64,7 @@ SELECT Roles.name FROM Roles JOIN UserRoles on Roles.id = UserRoles.role_id wher
                     }
                     //on successful login let's serve-side redirect the user to the home page.
 		    flash("Login successful");
-                    die(header("Location: home.php"));
+                    die(header("Location: profile.php"));
                 }
                 else {
 		    flash("Invalid password");

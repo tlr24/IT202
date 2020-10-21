@@ -1,4 +1,6 @@
 <?php require_once(__DIR__ . "/partials/nav.php"); ?>
+<title>Profile</title>
+<h1>Profile</h1>
 <?php
 //Note: we have this up here, so our update happens before our get/fetch
 //that way we'll fetch the updated data and have it correctly reflect on the form below

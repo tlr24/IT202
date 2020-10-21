@@ -1,5 +1,6 @@
 <?php require_once(__DIR__ . "/partials/nav.php"); ?>
-
+<title>Register</title>
+<h1>Register</h1>
 <?php
 if (isset($_POST["register"])) {
     $email = null;
@@ -24,7 +25,7 @@ if (isset($_POST["register"])) {
         //echo "Passwords match <br>";
     }
     else {
-        echo "Passwords don't match<br>";
+        flash("Passwords don't match");
         $isValid = false;
     }
     if (!isset($email) || !isset($password) || !isset($confirm)) {

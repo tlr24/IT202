@@ -19,6 +19,10 @@
         if (target) {
             target.after(ele);
         }
+        let target2 = document.getElementsByTagName("h1")[0]; // move flash messages under page title
+        if (target2) {
+            target2.after(ele);
+        }
     }
 
     moveMeUp(document.getElementById("flash"));
