@@ -28,8 +28,12 @@ if (isset($_POST["register"])) {
         flash("Passwords don't match");
         $isValid = false;
     }
-    if (!isset($email) || !isset($password) || !isset($confirm)) {
+    if (!isset($email) || !isset($username) || !isset($password) || !isset($confirm)) {
         $isValid = false;
+    }
+    if (!strpos($email, "@")) {
+        $isValid = false;
+        flash("Invalid email");
     }
     //TODO other validation as desired, remember this is the last line of defense
     if ($isValid) {
