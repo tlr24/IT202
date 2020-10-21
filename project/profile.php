@@ -76,8 +76,15 @@ if (isset($_POST["saved"])) {
         }
         //password is optional, so check if it's even set
         //if so, then check if it's a valid reset request
-        if (!empty($_POST["password"]) && !empty($_POST["confirm"])) {
-            if ($_POST["password"] == $_POST["confirm"]) {
+        if (!empty($_POST["currPassword"]) && !empty($_POST["password"]) && !empty($_POST["confirm"])) {
+            $stmt1 = $db->prepare("SELECT password from Users WHERE (email = :email)");
+            $params = array(":email" => $newEmail);
+            $r1 = $stmt1->execute($params);
+            $result1 = $stmt1->fetch(PDO::FETCH_ASSOC);
+            $password_hash_from_db = $result1["password"];
+            if (password_verify($_POST["currPassword"], $password_hash_from_db)) {
+              unset($result1["password"]);
+              if ($_POST["password"] == $_POST["confirm"]) {
                 $password = $_POST["password"];
                 $hash = password_hash($password, PASSWORD_BCRYPT);
                 //this one we'll do separate
@@ -89,10 +96,16 @@ if (isset($_POST["saved"])) {
                 else {
                     flash("Error resetting password");
                 }
+              }
+              else {
+   	              flash("Passwords don't match");
+	            }
             }
-	    else {
-	    	echo "Passwords don't match";
-	    }
+            else {
+                flash("Invalid current password"); 
+            }
+            
+            
         }
 //fetch/select fresh data in case anything changed
         $stmt = $db->prepare("SELECT email, username from Users WHERE id = :id LIMIT 1");
@@ -115,6 +128,7 @@ if (isset($_POST["saved"])) {
 ?>
 
 <form method="POST">
+  <h2>Account Info</h2>
   <p>
     <label for="email">Email</label>
     <input type="email" name="email" value="<?php safer_echo(get_email()); ?>"/>
@@ -123,9 +137,14 @@ if (isset($_POST["saved"])) {
     <label for="username">Username</label>
     <input type="text" maxlength="60" name="username" value="<?php safer_echo(get_username()); ?>"/>
   </p>
+  <h2>Password Reset</h2>
+  <p>
+    <label for="opw">Current Password</label>
+    <input type="password" name="currPassword"/>
+  </p>
   <p>
     <!-- DO NOT PRELOAD PASSWORD-->
-    <label for="pw">Password</label>
+    <label for="npw">New Password</label>
     <input type="password" name="password"/>
   </p>
   <p>
