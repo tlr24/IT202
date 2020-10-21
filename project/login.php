@@ -3,8 +3,8 @@
 <h1>Login</h1>
 <form method="POST">
   <p>
-    <label for="email">Email:</label>
-    <input type="email" id="email" name="email" required/>
+    <label for="email">Email or Username:</label>
+    <input type="text" id="email" name="email" required/>
   </p>
   <p>
     <label for="p1">Password:</label>
@@ -27,14 +27,10 @@ if (isset($_POST["login"])) {
     if (!isset($email) || !isset($password)) {
         $isValid = false;
     }
-    if (!strpos($email, "@")) {
-        $isValid = false;
-        flash("Invalid email");
-    }
     if ($isValid) {
         $db = getDB();
         if (isset($db)) {
-            $stmt = $db->prepare("SELECT id, email, username, password from Users WHERE email = :email LIMIT 1");
+            $stmt = $db->prepare("SELECT id, email, username, password from Users WHERE (username = :email or email = :email)");
 
             $params = array(":email" => $email);
             $r = $stmt->execute($params);
