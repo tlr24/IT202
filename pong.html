@@ -15,6 +15,7 @@ var ballSize = 10;
 var ballSpeed = 2;
 var paddleSpeed = 2;
 var drawables = [];
+var colors = ['#000000', '#f51f44', '#18a8df', '#8559a7', '#d9214d', '#8d4e77', '#71ea71'];
 const audio = document.querySelector("audio");
 // Key Codes
 var W = 87;
@@ -51,6 +52,10 @@ function init() {
     }
 }
 function resetBall() {
+	let size = Math.floor(Math.random()*30 + 10);
+	ball.w = size;
+	ball.h = size;
+	console.log(colors[Math.floor(Math.random()*5)]);
     ball.x = canvas.width / 2 - ball.w / 2;
     ball.y = canvas.height / 2 - ball.w / 2;
     // Modify the ball object to have two speed properties, one for X and one for Y
@@ -179,12 +184,16 @@ function checkPaddleCollision() {
     if (ball.y + ball.h / 2 >= leftPaddle.y && ball.y + ball.h / 2 <= leftPaddle.y + leftPaddle.h) {
         if (ball.x <= leftPaddle.x + leftPaddle.w) {
             audio.play();
+            console.log("played audio left");
+			ball.c = colors[Math.floor(Math.random()*colors.length)];
             bounceBall();
         }
     }
     if (ball.y + ball.h / 2 >= rightPaddle.y && ball.y + ball.h / 2 <= rightPaddle.y + rightPaddle.h) {
         if (ball.x + ball.w >= rightPaddle.x) {
             audio.play();
+            console.log("played audio right");
+			ball.c = colors[Math.floor(Math.random()*colors.length)];
             bounceBall();
         }
     }
@@ -200,6 +209,10 @@ function checkScore() {
         resetBall();
         ball.sX *= -1;
     }
+    //if (leftScore == 3 || rightScore == 3) {
+    //	ball.sX *= 2;
+    //	ball.sY *= 2;
+	//}
     
 }
 function drawScores() {
