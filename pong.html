@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<audio id="audio" src="Beep.mp3" type="audio/mp3"></audio>
+<audio id="audio" src="Beep.ogg" type="audio/mp3"></audio>
 <script>
 var canvas;
 var context;
@@ -16,7 +16,6 @@ var ballSpeed = 2;
 var paddleSpeed = 2;
 var drawables = [];
 const audio = document.querySelector("audio");
-var sound = document.getElementById(audio);
 // Key Codes
 var W = 87;
 var S = 83;
@@ -179,14 +178,14 @@ function checkPaddleCollision() {
     // Bounce the ball off the paddles
     if (ball.y + ball.h / 2 >= leftPaddle.y && ball.y + ball.h / 2 <= leftPaddle.y + leftPaddle.h) {
         if (ball.x <= leftPaddle.x + leftPaddle.w) {
+            audio.play();
             bounceBall();
-            sound.play();
         }
     }
     if (ball.y + ball.h / 2 >= rightPaddle.y && ball.y + ball.h / 2 <= rightPaddle.y + rightPaddle.h) {
         if (ball.x + ball.w >= rightPaddle.x) {
-            bounceBall();
             audio.play();
+            bounceBall();
         }
     }
 }
