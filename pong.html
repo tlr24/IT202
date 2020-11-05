@@ -52,7 +52,7 @@ function init() {
     }
 }
 function resetBall() {
-	let size = Math.floor(Math.random()*30 + 10);
+	let size = Math.floor(Math.random()*40 + 10);
 	ball.w = size;
 	ball.h = size;
 	console.log(colors[Math.floor(Math.random()*5)]);
@@ -209,10 +209,30 @@ function checkScore() {
         resetBall();
         ball.sX *= -1;
     }
-    //if (leftScore == 3 || rightScore == 3) {
-    //	ball.sX *= 2;
-    //	ball.sY *= 2;
-	//}
+    switch(leftScore){
+    	case 3:
+    		leftPaddle.h = paddleHeight/2;
+    		break;
+		case 6:
+			leftPaddle.h = paddleHeight/2.25;
+			break;
+		case 9:
+			leftPaddle.h = paddleHeight/2.5;
+		default:
+			break;
+	}
+	switch(rightScore){
+		case 3:
+			rightPaddle.h = paddleHeight/2;
+			break;
+		case 6:
+			rightPaddle.h = paddleHeight/2.25;
+			break;
+		case 9:
+			rightPaddle.h = paddleHeight/2.5;
+		default:
+			break;
+	}
     
 }
 function drawScores() {
