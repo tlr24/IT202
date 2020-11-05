@@ -15,7 +15,7 @@ var ballSize = 10;
 var ballSpeed = 2;
 var paddleSpeed = 2;
 var drawables = [];
-var colors = ['#000000', '#f51f44', '#18a8df', '#8559a7', '#d9214d', '#8d4e77', '#71ea71'];
+var colors = ['#000000', '#f51f44', '#18a8df', '#8559a7', '#d9214d', '#8d4e77', '#71ea71', '#5f0f40', '#ffadc6'];
 const audio = document.querySelector("audio");
 // Key Codes
 var W = 87;
@@ -55,7 +55,6 @@ function resetBall() {
 	let size = Math.floor(Math.random()*40 + 10);
 	ball.w = size;
 	ball.h = size;
-	console.log(colors[Math.floor(Math.random()*5)]);
     ball.x = canvas.width / 2 - ball.w / 2;
     ball.y = canvas.height / 2 - ball.w / 2;
     // Modify the ball object to have two speed properties, one for X and one for Y
