@@ -6,10 +6,22 @@ if (!has_role("Admin")) {
     die(header("Location: login.php"));
 }
 ?>
+<?php
+    //get products for dropdown
+    $db = getDB();
+    $stmt = $db->prepare("SELECT id,name from Products");
+    $r = $stmt->execute();
+    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+?>
     <h3>Create Cart</h3>
     <form method="POST">
         <label>Product ID</label>
-        <input name="product" placeholder="Product ID"/>
+        <select name="product" value="<?php echo $r["name"];?>" >
+            <option value="-1">None</option>
+            <?php foreach ($products as $item): ?>
+                <option value="<?php safer_echo($item["id"]); ?>"><?php safer_echo($item["name"]); ?></option>
+            <?php endforeach; ?>
+        </select>
         <label>Quantity</label>
         <input type="number" min="1" name="quantity"/>
         <input type="submit" name="save" value="Create"/>
