@@ -17,7 +17,7 @@ if (isset($_GET["id"])) {
 $result = [];
 if (isset($id)) {
     $db = getDB();
-    $stmt = $db->prepare("Select Cart.price, Products.name, Cart.quantity from Cart join Products on Cart.product_id = Products.id where Cart.id = :id");
+    $stmt = $db->prepare("Select Cart.price, Products.name, Cart.quantity, Users.username from Cart JOIN Users on Cart.user_id = Users.id LEFT join Products on Cart.product_id = Products.id where Cart.id = :id");
     $r = $stmt->execute([":id" => $id]);
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$result) {
@@ -38,6 +38,7 @@ if (isset($id)) {
                 <div>Quantity: <?php safer_echo($result["quantity"]); ?></div>
                 <div>Price: <?php safer_echo($result["price"]); ?></div>
                 <div>Subtotal: <?php safer_echo($result["price"] * $result["quantity"]); ?></div>
+                <div>User: <?php safer_echo($result["username"]); ?></div>
             </div>
         </div>
     </div>
