@@ -14,7 +14,7 @@ if (isset($_POST["query"])) {
 }
 if (isset($_POST["search"]) && !empty($query)) {
     $db = getDB();
-    $stmt = $db->prepare("Select Cart.id, Cart.price, Products.name, Cart.quantity from Cart join Products on Cart.product_id = Products.id where Products.name like :q LIMIT 10");
+    $stmt = $db->prepare("Select Cart.id, Cart.price, Products.name, Cart.quantity, Users.username from Cart JOIN Users on Cart.user_id = Users.id left join Products on Cart.product_id = Products.id where Products.name like :q LIMIT 10");
     $r = $stmt->execute([":q" => "%$query%"]);
     if ($r) {
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -49,6 +49,10 @@ if (isset($_POST["search"]) && !empty($query)) {
                     <div>
                         <div>Subtotal:</div>
                         <div><?php safer_echo($r["price"]*$r["quantity"]); ?></div>
+                    </div>
+                    <div>
+                        <div>User:</div>
+                        <div><?php safer_echo($r["username"]); ?></div>
                     </div>
                     <div>
                         <a type="button" href="test_edit_cart.php?id=<?php safer_echo($r['id']); ?>">Edit</a>
