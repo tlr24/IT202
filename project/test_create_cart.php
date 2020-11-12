@@ -9,30 +9,33 @@ if (!has_role("Admin")) {
 <?php
     //get products for dropdown
     $db = getDB();
-    $stmt = $db->prepare("SELECT id,name from Products");
+    $stmt = $db->prepare("SELECT id,name,price from Products LIMIT 10");
     $r = $stmt->execute();
     $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
+<?php
+function OnSelectionChange() {
+    echo("OK IT WORKS");
+}
+?>
     <h3>Create Cart</h3>
     <form method="POST">
-        <label>Product ID</label>
+        <label>Product</label>
         <select name="product" value="<?php echo $r["name"];?>" >
-            <option value="-1">None</option>
             <?php foreach ($products as $item): ?>
-                <option value="<?php safer_echo($item["id"]); ?>"><?php safer_echo($item["name"]); ?></option>
+                <option value="<?php safer_echo($item["id"]); ?>"><?php safer_echo($item["name"]); ?> ($<?php safer_echo($item["price"]);?>)</option>
             <?php endforeach; ?>
         </select>
         <label>Quantity</label>
         <input type="number" min="1" name="quantity"/>
         <input type="submit" name="save" value="Create"/>
     </form>
-
 <?php
 if (isset($_POST["save"])) {
     //TODO add proper validation/checks
     $name = $_POST["product"];
     $quantity = $_POST["quantity"];
-    $price = getPrice($name) * $quantity;
+    $price = getPrice($name);
     $user = get_user_id();
     $db = getDB();
     $stmt = $db->prepare("INSERT INTO Cart (product_id, quantity, price, user_id) VALUES(:name, :quantity, :price,:user)");

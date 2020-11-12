@@ -21,7 +21,7 @@ if (isset($_POST["save"])) {
         $product = null;
     }
     $quantity = $_POST["quantity"];
-    $price = getPrice($product) * $quantity;
+    $price = getPrice($product);
     $user = get_user_id();
     $db = getDB();
     if (isset($id)) {
@@ -58,24 +58,25 @@ if (isset($id)) {
 }
 //get products for dropdown
 $db = getDB();
-$stmt = $db->prepare("SELECT id,name from Products LIMIT 10");
+$stmt = $db->prepare("SELECT id,name,price from Products LIMIT 10");
 $r = $stmt->execute();
 $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
     <h3>Edit Cart</h3>
     <form method="POST">
-        <label>Product</label>
-        <select name="product" value="<?php echo $r["name"];?>" >
-            <option value="-1">None</option>
-            <?php foreach ($products as $item): ?>
-                <?php $selected = $item["id"] == $r["id"];?>
-                <option value="<?php safer_echo($item["id"]); ?>" <?php echo ($selected ? 'selected="selected"' : 'selected=""');?>>
-                <?php safer_echo($item["name"]); ?></option>
-            <?php endforeach; ?>
-        </select>
-        <label>Quantity</label>
-        <input type="number" min="1" name="quantity" value="<?php echo $result["quantity"]; ?>"/>
-        <label>Price: <?php echo $result["price"]; ?></label>
+        <p>
+            <label>Product</label>
+            <select name="product" value="<?php echo $result["id"];?>" >
+                <?php foreach ($products as $item): ?>
+        <p>($item["id"] == $result["product_id"])</p>
+                    <option value="<?php safer_echo($item["id"]); ?>" <?php echo ($item["id"] == $result["product_id"]) ? 'selected="selected"' : 'selected=""';?>>
+                        <?php safer_echo($item["name"]); ?> ($<?php safer_echo($item["price"]);?>)</option>
+                <?php endforeach; ?>
+            </select>
+            <label>Quantity</label>
+            <input type="number" min="1" name="quantity" value="<?php echo $result["quantity"]; ?>"/>
+        </p>
+
         <input type="submit" name="save" value="Update"/>
     </form>
 
