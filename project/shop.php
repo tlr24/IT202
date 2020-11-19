@@ -64,19 +64,22 @@ if (empty($query)) {
         <?php foreach ($results as $r): ?>
             <div class="list-group-item">
                 <div class="card">
+                    <form method = "POST">
                     <div class="card-title">
                         <div><b><?php safer_echo($r["name"]); ?></b></div>
                         <div>Price:<div>$<?php safer_echo($r["price"]); ?></div></div>
-
+                        <input type="hidden" name="id" value="<?php safer_echo($r["id"]); ?>">
+                        <input type="hidden" name="name" value="<?php safer_echo($r["name"]); ?>">
                     </div>
                     <div>Quantity:</div>
                     <div class="quantity">
                         <input type="number" min="1" max="<?php safer_echo($r["quantity"])?>" step="1" name="quantity" value="1"/>
                     </div>
                     <div class="card-body">
-                        <button type="button" onclick="addToCart(<?php $r ?>)" class="btn btn-primary btn-lg">Add to Cart
+                        <button type="sumbit" class="btn btn-primary btn-lg" name="save">Add to Cart
                         </button>
                     </div>
+                    </form>
                 </div>
                 <div>
                     <?php if (has_role("Admin")): ?>
@@ -93,35 +96,42 @@ if (empty($query)) {
     </div>
 
 <script>
-    function addToCart(<?php $r ?>) {
+
         <?php
-            if (is_logged_in()) {
-                //TODO add proper validation/checks
-                $name = $r["id"];
-                $quantity = $_POST["quantity"];
-                $price = getPrice($name);
-                $user = get_user_id();
-                $db = getDB();
-                $stmt = $db->prepare("INSERT INTO Cart (product_id, quantity, price, user_id) VALUES(:name, :quantity, :price,:user)");
-                $r = $stmt->execute([
-                    ":name" => $name,
-                    ":quantity" => $quantity,
-                    ":price" => $price,
-                    ":user" => $user
-            ]);
-                if ($r) {
-                    flash("Successfully added to cart: " . $db->lastInsertId());
+            if (isset($_POST["save"])) {
+                if (is_logged_in()) {
+                    //TODO add proper validation/checks
+                    $name = $_POST["id"];
+                    $quantity = $_POST["quantity"];
+                    $price = getPrice($name);
+                    $user = get_user_id();
+                    $db = getDB();
+                    $stmt = $db->prepare("INSERT INTO Cart (product_id, quantity, price, user_id) VALUES(:name, :quantity, :price,:user)");
+                    $r = $stmt->execute([
+                        ":name" => $name,
+                        ":quantity" => $quantity,
+                        ":price" => $price,
+                        ":user" => $user
+                    ]);
+                    if ($r) {
+                        flash($_POST["name"] . " was successfully added to cart");
+                    }
+                    else {
+                        $e = $stmt->errorInfo();
+                        if ($e[0] == 23000) {
+                            flash("Item already in cart");
+                        }
+                        else {
+                            flash("Error adding to cart: " . var_export($e, true));
+                        }
+                    }
                 }
                 else {
-                    $e = $stmt->errorInfo();
-                    flash("Error adding to cart: " . var_export($e, true));
+                    flash("Please login to add to cart.");
                 }
             }
-            else {
-                flash("Please login to add to cart.");
-            }
+
         ?>
-    }
 </script>
 
 <?php require(__DIR__ . "/partials/flash.php");
