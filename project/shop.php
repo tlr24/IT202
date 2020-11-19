@@ -1,8 +1,5 @@
 <?php require_once(__DIR__ . "/partials/nav.php"); ?>
 <?php
-if (!is_logged_in()) {
-    flash("You must be logged in to make purchases");
-}
 //$balance = getBalance();
 $cost = 0;
 ?>
@@ -30,7 +27,7 @@ if (empty($query)) {
         let balance = <?php echo $balance;?>;
         let cost = <?php echo $cost;?>;
 
-        function addToCart() {
+        function cart() {
             //todo client side balance check
             if (cost > balance) {
                 alert("You can't afford this right now");
@@ -72,8 +69,12 @@ if (empty($query)) {
                         <div>Price:<div>$<?php safer_echo($r["price"]); ?></div></div>
 
                     </div>
+                    <div>Quantity:</div>
+                    <div class="quantity">
+                        <input type="number" min="1" max="<?php safer_echo($r["quantity"])?>" step="1" name="quantity" value="1"/>
+                    </div>
                     <div class="card-body">
-                        <button type="button" onclick="addToCart();" class="btn btn-primary btn-lg">Add to Cart
+                        <button type="button" onclick="addToCart(<?php $r ?>)" class="btn btn-primary btn-lg">Add to Cart
                         </button>
                     </div>
                 </div>
@@ -90,5 +91,37 @@ if (empty($query)) {
     <p>No results</p>
 <?php endif; ?>
     </div>
+
+<script>
+    function addToCart(<?php $r ?>) {
+        <?php
+            if (is_logged_in()) {
+                //TODO add proper validation/checks
+                $name = $r["id"];
+                $quantity = $_POST["quantity"];
+                $price = getPrice($name);
+                $user = get_user_id();
+                $db = getDB();
+                $stmt = $db->prepare("INSERT INTO Cart (product_id, quantity, price, user_id) VALUES(:name, :quantity, :price,:user)");
+                $r = $stmt->execute([
+                    ":name" => $name,
+                    ":quantity" => $quantity,
+                    ":price" => $price,
+                    ":user" => $user
+            ]);
+                if ($r) {
+                    flash("Successfully added to cart: " . $db->lastInsertId());
+                }
+                else {
+                    $e = $stmt->errorInfo();
+                    flash("Error adding to cart: " . var_export($e, true));
+                }
+            }
+            else {
+                flash("Please login to add to cart.");
+            }
+        ?>
+    }
+</script>
 
 <?php require(__DIR__ . "/partials/flash.php");

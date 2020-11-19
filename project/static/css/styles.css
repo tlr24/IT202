@@ -75,6 +75,11 @@ div.list-group-item {
     margin: 10px;
 }
 
+div.quantity {
+    width: 80px;
+    height: fit-content;
+}
+
 div.card-body {
     font-family: Arial;
     font-size: 0.8em;
