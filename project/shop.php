@@ -59,6 +59,8 @@ if (empty($query)) {
 
         }
     </script>
+<title>Shop</title>
+<h1>Shop</h1>
     <div class="results"></div>
 <?php if (count($results) > 0): ?>
     <div class="list-group">
@@ -66,7 +68,7 @@ if (empty($query)) {
             <div class="list-group-item">
                 <div class="card">
                     <div class="card-title">
-                        <div><?php safer_echo($r["name"]); ?></div>
+                        <div><b><?php safer_echo($r["name"]); ?></b></div>
                         <div>Price:<div>$<?php safer_echo($r["price"]); ?></div></div>
 
                     </div>
@@ -79,7 +81,7 @@ if (empty($query)) {
                     <?php if (has_role("Admin")): ?>
                     <button type="button" onClick="document.location.href='test/test_edit_products.php?id=<?php safer_echo($r['id']); ?>'">Edit</button>
                     <?php endif; ?>
-                    <button type="button" onClick="document.location.href='test/test_view_products.php?id=<?php safer_echo($r['id']); ?>'">View</button>
+                    <button type="button" onClick="document.location.href='view_product.php?id=<?php safer_echo($r['id']); ?>'">View</button>
                 </div>
             </div>
         <?php endforeach; ?>

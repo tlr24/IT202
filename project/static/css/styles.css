@@ -72,4 +72,10 @@ div.list-group-item {
     background-color: #ce93d8;
     font-family: Arial;
     font-size: 0.8em;
+    margin: 10px;
+}
+
+div.card-body {
+    font-family: Arial;
+    font-size: 0.8em;
 }

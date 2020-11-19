@@ -5,6 +5,7 @@ require_once(__DIR__ . "/../lib/helpers.php");
 <link rel="stylesheet" href="<?php echo getURL("static/css/styles.css");?>">
 <nav><ul class="nav">
     <li><a href="<?php echo getURL("home.php"); ?>">Home</a></li>
+    <li><a href="<?php echo getURL("shop.php"); ?>">Shop</a></li>
     <?php if(!is_logged_in()):?>
     	<li><a href="<?php echo getURL("login.php"); ?>">Login</a></li>
     	<li><a href="<?php echo getURL("register.php"); ?>">Register</a></li>
