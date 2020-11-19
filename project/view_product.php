@@ -27,11 +27,11 @@ if (isset($id)) {
         <div class="card-body">
             <div>
                 <p>Information</p>
-                <div><b>Quantity: </b><?php safer_echo($result["quantity"]); ?></div>
                 <div><b>Price: $</b><?php safer_echo($result["price"]); ?></div>
                 <div><b>Description: </b><?php safer_echo($result["description"]); ?></div>
                 <?php if (has_role("Admin")): ?>
-                <div>Owned by: <?php safer_echo($result["username"]); ?></div>
+                    <div><b>Quantity: </b><?php safer_echo($result["quantity"]); ?></div>
+                    <div><b>Owned by: </b><?php safer_echo($result["username"]); ?></div>
                 <?php endif; ?>
             </div>
         </div>
@@ -39,4 +39,5 @@ if (isset($id)) {
 <?php else: ?>
     <p>Error looking up id...</p>
 <?php endif; ?>
+
 <?php require(__DIR__ . "/partials/flash.php");
