@@ -62,3 +62,20 @@ input[type=submit] {
 input[type=submit]:hover {
     background-color: #BE49D2;
 }
+
+div.list-group-item {
+    display: inline-block;
+    width: 220px;
+    height: 125px;
+    padding: 5px;
+    border: 1px solid #7b1fa2;
+    background-color: #ce93d8;
+    font-family: Arial;
+    font-size: 0.8em;
+    margin: 10px;
+}
+
+div.card-body {
+    font-family: Arial;
+    font-size: 0.8em;
+}
