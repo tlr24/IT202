@@ -55,7 +55,7 @@ input[type=submit] {
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 18;
+    font-size: 18px;
     font-family: monospace;
 }
 
@@ -65,14 +65,19 @@ input[type=submit]:hover {
 
 div.list-group-item {
     display: inline-block;
-    width: 220px;
-    height: 125px;
-    padding: 5px;
+    width: 200px;
+    height: fit-content;
+    padding: 20px;
     border: 1px solid #7b1fa2;
     background-color: #ce93d8;
     font-family: Arial;
     font-size: 0.8em;
     margin: 10px;
+}
+
+div.quantity {
+    width: 80px;
+    height: fit-content;
 }
 
 div.card-body {
