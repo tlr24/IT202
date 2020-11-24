@@ -11,7 +11,7 @@ if (isset($_POST["query"])) {
 }
 if (empty($query)) {
     $db = getDB();
-    $stmt = $db->prepare("SELECT id,name,quantity,price,description,user_id from Products WHERE name like :q LIMIT 10");
+    $stmt = $db->prepare("SELECT id,name,quantity,price,description,visibility,user_id from Products WHERE name like :q LIMIT 10");
     $r = $stmt->execute([":q" => "%$query%"]);
     if ($r) {
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -62,32 +62,34 @@ if (empty($query)) {
 <?php if (count($results) > 0): ?>
     <div class="list-group">
         <?php foreach ($results as $r): ?>
-            <div class="list-group-item">
-                <div class="card">
-                    <form method = "POST">
-                    <div class="card-title">
-                        <div><b><?php safer_echo($r["name"]); ?></b></div>
-                        <div>Price:<div>$<?php safer_echo($r["price"]); ?></div></div>
-                        <input type="hidden" name="id" value="<?php safer_echo($r["id"]); ?>">
-                        <input type="hidden" name="name" value="<?php safer_echo($r["name"]); ?>">
+            <?php if ($r["visibility"] == '1' || has_role("Admin")): ?>
+                <div class="list-group-item">
+                    <div class="card">
+                        <form method = "POST">
+                        <div class="card-title">
+                            <div><b><?php safer_echo($r["name"]); ?></b></div>
+                            <div>Price:<div>$<?php safer_echo($r["price"]); ?></div></div>
+                            <input type="hidden" name="id" value="<?php safer_echo($r["id"]); ?>">
+                            <input type="hidden" name="name" value="<?php safer_echo($r["name"]); ?>">
+                        </div>
+                        <div>Quantity:</div>
+                        <div class="quantity">
+                            <input type="number" min="1" max="<?php safer_echo($r["quantity"])?>" step="1" name="quantity" value="1"/>
+                        </div>
+                        <div class="card-body">
+                            <button type="sumbit" class="btn btn-primary btn-lg" name="save">Add to Cart
+                            </button>
+                        </div>
+                        </form>
                     </div>
-                    <div>Quantity:</div>
-                    <div class="quantity">
-                        <input type="number" min="1" max="<?php safer_echo($r["quantity"])?>" step="1" name="quantity" value="1"/>
+                    <div>
+                        <?php if (has_role("Admin")): ?>
+                        <button type="button" onClick="document.location.href='test/test_edit_products.php?id=<?php safer_echo($r['id']); ?>'">Edit</button>
+                        <?php endif; ?>
+                        <button type="button" onClick="document.location.href='view_product.php?id=<?php safer_echo($r['id']); ?>'">View</button>
                     </div>
-                    <div class="card-body">
-                        <button type="sumbit" class="btn btn-primary btn-lg" name="save">Add to Cart
-                        </button>
-                    </div>
-                    </form>
                 </div>
-                <div>
-                    <?php if (has_role("Admin")): ?>
-                    <button type="button" onClick="document.location.href='test/test_edit_products.php?id=<?php safer_echo($r['id']); ?>'">Edit</button>
-                    <?php endif; ?>
-                    <button type="button" onClick="document.location.href='view_product.php?id=<?php safer_echo($r['id']); ?>'">View</button>
-                </div>
-            </div>
+            <?php endif; ?>
         <?php endforeach; ?>
     </div>
 <?php else: ?>
