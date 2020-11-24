@@ -8,13 +8,28 @@ $cost = 0;
 <?php
 $query = "";
 $results = [];
+$categories = getCategories();
 if (isset($_POST["query"])) {
     $query = $_POST["query"];
 }
 if (empty($query)) { // show all products initially
     $db = getDB();
-    $stmt = $db->prepare("SELECT id,name,quantity,price,description,visibility,user_id from Products WHERE name like :q LIMIT 10");
-    $r = $stmt->execute([":q" => "%$query%"]);
+    if (isset($_POST["category"])) {
+        $curr_category = $_POST["category"];
+        if ($curr_category != "") {
+            $stmt = $db->prepare("SELECT id,name,quantity,price,description,visibility,user_id from Products WHERE category=:category LIMIT 10");
+            $r = $stmt->execute([":category" => $curr_category]);
+        }
+        else {
+            $stmt = $db->prepare("SELECT id,name,quantity,price,description,visibility,user_id from Products WHERE name like :q LIMIT 10");
+            $r = $stmt->execute([":q" => "%$query%"]);
+        }
+    }
+    else {
+        $stmt = $db->prepare("SELECT id,name,quantity,price,description,visibility,user_id from Products WHERE name like :q LIMIT 10");
+        $r = $stmt->execute([":q" => "%$query%"]);
+    }
+
     if ($r) {
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -22,10 +37,17 @@ if (empty($query)) { // show all products initially
         flash("There was a problem fetching the results");
     }
 }
-else if (isset($_POST["search"])) { // if name is searched
+else if (isset($_POST["search"])) { // if search is filled out
     $db = getDB();
-    $stmt = $db->prepare("SELECT id,name,quantity,price,description,visibility,user_id from Products WHERE name like :q LIMIT 10");
-    $r = $stmt->execute([":q" => "%$query%"]);
+    $curr_category = $_POST["category"];
+    if ($curr_category == "") {
+        $stmt = $db->prepare("SELECT id,name,quantity,price,description,visibility,user_id from Products WHERE name like :q LIMIT 10");
+        $r = $stmt->execute([":q" => "%$query%"]);
+    }
+    else {
+        $stmt = $db->prepare("SELECT id,name,quantity,price,description,visibility,user_id,category from Products WHERE name like :q AND category=:category LIMIT 10");
+        $r = $stmt->execute([":q" => "%$query%", ":category" => $curr_category]);
+    }
     if ($r) {
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -35,6 +57,13 @@ else if (isset($_POST["search"])) { // if name is searched
 }
 ?>
     <form method="POST">
+        <label>Category:</label>
+        <select name="category" value="" >
+            <option value="">None</option>
+            <?php foreach ($categories as $cat): ?>
+                <option value="<?php safer_echo($cat["category"]); ?>"><?php safer_echo($cat["category"]); ?></option>
+            <?php endforeach; ?>
+        </select>
         <input name="query" placeholder="Search" value="<?php safer_echo($query); ?>"/>
         <input type="submit" value="Search" name="search"/>
     </form>
