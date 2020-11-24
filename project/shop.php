@@ -3,13 +3,26 @@
 //$balance = getBalance();
 $cost = 0;
 ?>
+
+<h1>Shop</h1>
 <?php
 $query = "";
 $results = [];
 if (isset($_POST["query"])) {
     $query = $_POST["query"];
 }
-if (empty($query)) {
+if (empty($query)) { // show all products initially
+    $db = getDB();
+    $stmt = $db->prepare("SELECT id,name,quantity,price,description,visibility,user_id from Products WHERE name like :q LIMIT 10");
+    $r = $stmt->execute([":q" => "%$query%"]);
+    if ($r) {
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    else {
+        flash("There was a problem fetching the results");
+    }
+}
+else if (isset($_POST["search"])) { // if name is searched
     $db = getDB();
     $stmt = $db->prepare("SELECT id,name,quantity,price,description,visibility,user_id from Products WHERE name like :q LIMIT 10");
     $r = $stmt->execute([":q" => "%$query%"]);
@@ -21,43 +34,12 @@ if (empty($query)) {
     }
 }
 ?>
+    <form method="POST">
+        <input name="query" placeholder="Search" value="<?php safer_echo($query); ?>"/>
+        <input type="submit" value="Search" name="search"/>
+    </form>
 
-    <script>
-        //php will exec first so just the value will be visible on js side
-        let balance = <?php echo $balance;?>;
-        let cost = <?php echo $cost;?>;
-
-        function cart() {
-            //todo client side balance check
-            if (cost > balance) {
-                alert("You can't afford this right now");
-                return;
-            }
-            //https://www.w3schools.com/xml/ajax_xmlhttprequest_send.asp
-            let xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function () {
-                if (this.readyState == 4 && this.status == 200) {
-                    let json = JSON.parse(this.responseText);
-                    if (json) {
-                        if (json.status == 200) {
-                            alert("Successfully added " + json.cart.name + " to cart");
-                            location.reload();
-                        } else {
-                            alert(json.error);
-                        }
-                    }
-                }
-            };
-            xhttp.open("POST", "<?php echo getURL("api/addToCart.php");?>", true);
-            //this is required for post ajax calls to submit it as a form
-            xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-            //map any key/value data similar to query params
-            xhttp.send(`id=${id}&qt=0`);
-
-        }
-    </script>
 <title>Shop</title>
-<h1>Shop</h1>
     <div class="results"></div>
 <?php if (count($results) > 0): ?>
     <div class="list-group">
