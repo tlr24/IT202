@@ -37,7 +37,7 @@ form > p {
 }
 
 input, select {
-    width: 120%; 
+    width: 100%;
     padding: 12px 20px;
     margin: 8px 0;
     display: table-cell; //inline-block;
@@ -83,4 +83,8 @@ div.quantity {
 div.card-body {
     font-family: Arial;
     font-size: 0.8em;
+}
+
+input[type="radio"]{
+    width:20px;
 }
