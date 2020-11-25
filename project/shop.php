@@ -12,21 +12,59 @@ $categories = getCategories();
 if (isset($_POST["query"])) {
     $query = $_POST["query"];
 }
+$lookup_query = "SELECT id,name,quantity,price,description,visibility,user_id from Products WHERE ";
+$asc_query = "ORDER BY price ASC LIMIT 10";
+$desc_query = "ORDER BY price DESC LIMIT 10";
 if (empty($query)) { // show all products initially
     $db = getDB();
     if (isset($_POST["category"])) {
         $curr_category = $_POST["category"];
-        if ($curr_category != "") {
-            $stmt = $db->prepare("SELECT id,name,quantity,price,description,visibility,user_id from Products WHERE category=:category LIMIT 10");
+        if ($curr_category != "") { // if the query is empty but a category is chosen
+            switch ($_POST["sort"]) {
+                case "asc":
+                    $stmt = $db->prepare($lookup_query . "category=:category " . $asc_query);
+                    break;
+                case "desc":
+                    $stmt = $db->prepare($lookup_query . "category=:category " . $desc_query);
+                    break;
+                default:
+                    $stmt = $db->prepare($lookup_query . "category=:category ");
+                    break;
+            }
             $r = $stmt->execute([":category" => $curr_category]);
         }
-        else {
-            $stmt = $db->prepare("SELECT id,name,quantity,price,description,visibility,user_id from Products WHERE name like :q LIMIT 10");
+        else { // if the query is empty and category is not chosen
+            switch ($_POST["sort"]) {
+                case "asc":
+                    $stmt = $db->prepare($lookup_query . "name like :q " . $asc_query);
+                    break;
+                case "desc":
+                    $stmt = $db->prepare($lookup_query . "name like :q " . $desc_query);
+                    break;
+                default:
+                    $stmt = $db->prepare($lookup_query . "name like :q ");
+                    break;
+            }
             $r = $stmt->execute([":q" => "%$query%"]);
         }
     }
-    else {
-        $stmt = $db->prepare("SELECT id,name,quantity,price,description,visibility,user_id from Products WHERE name like :q LIMIT 10");
+    else { // if query is empty and category isn't set
+        if (isset($_POST["sort"])) { // if price sort is set
+            switch ($_POST["sort"]) {
+                case "asc":
+                    $stmt = $db->prepare($lookup_query . "name like :q " . $asc_query);
+                    break;
+                case "desc":
+                    $stmt = $db->prepare($lookup_query . "name like :q " . $desc_query);
+                    break;
+                default:
+                    $stmt = $db->prepare($lookup_query . "name like :q ");
+                    break;
+            }
+        } // if price sort isn't set
+        else {
+            $stmt = $db->prepare($lookup_query . "name like :q ");
+        }
         $r = $stmt->execute([":q" => "%$query%"]);
     }
 
@@ -40,12 +78,34 @@ if (empty($query)) { // show all products initially
 else if (isset($_POST["search"])) { // if search is filled out
     $db = getDB();
     $curr_category = $_POST["category"];
-    if ($curr_category == "") {
-        $stmt = $db->prepare("SELECT id,name,quantity,price,description,visibility,user_id from Products WHERE name like :q LIMIT 10");
+    if ($curr_category == "") { // if no category is chosen
+        switch ($_POST["sort"]) {
+            case "asc":
+                $stmt = $db->prepare($lookup_query . "name like :q " . $asc_query);
+                break;
+            case "desc":
+                $stmt = $db->prepare($lookup_query . "name like :q " . $desc_query);
+                break;
+            default:
+                $stmt = $db->prepare($lookup_query . "name like :q ");
+                break;
+        }
+        //$stmt = $db->prepare($lookup_query . "name like :q " . $asc_query);
         $r = $stmt->execute([":q" => "%$query%"]);
     }
-    else {
-        $stmt = $db->prepare("SELECT id,name,quantity,price,description,visibility,user_id,category from Products WHERE name like :q AND category=:category LIMIT 10");
+    else { // if a category is picked
+        switch ($_POST["sort"]) {
+            case "asc":
+                $stmt = $db->prepare($lookup_query . "name like :q AND category=:category " . $asc_query);
+                break;
+            case "desc":
+                $stmt = $db->prepare($lookup_query . "name like :q AND category=:category " . $desc_query);
+                break;
+            default:
+                $stmt = $db->prepare($lookup_query . "name like :q AND category=:category ");
+                break;
+        }
+        //$stmt = $db->prepare($lookup_query . "name like :q AND category=:category " . $asc_query);
         $r = $stmt->execute([":q" => "%$query%", ":category" => $curr_category]);
     }
     if ($r) {
@@ -57,6 +117,7 @@ else if (isset($_POST["search"])) { // if search is filled out
 }
 ?>
     <form method="POST">
+        <input name="query" placeholder="Search" value="<?php safer_echo($query); ?>"/>
         <label>Category:</label>
         <select name="category" value="" >
             <option value="">None</option>
@@ -64,7 +125,14 @@ else if (isset($_POST["search"])) { // if search is filled out
                 <option value="<?php safer_echo($cat["category"]); ?>"><?php safer_echo($cat["category"]); ?></option>
             <?php endforeach; ?>
         </select>
-        <input name="query" placeholder="Search" value="<?php safer_echo($query); ?>"/>
+        <div>
+            <label>Sort by price:</label>
+            <select name="sort" value="">
+                <option value ="">Best Match</option>
+                <option value ="asc">Low to High</option>
+                <option value ="desc">High to Low</option>
+            </select>
+        </div>
         <input type="submit" value="Search" name="search"/>
     </form>
 
