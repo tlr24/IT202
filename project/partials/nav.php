@@ -12,7 +12,6 @@ require_once(__DIR__ . "/../lib/helpers.php");
     <?php endif;?>
     <?php if(has_role("Admin")):?>
         <li><a href="<?php echo getURL("add_product.php");?>">Add Product</a></li>
-        <li><a href="<?php echo getURL("test/test_list_products.php");?>">View Product</a></li>
         <li><a href="<?php echo getURL("test/test_create_cart.php");?>">Add to Cart</a></li>
         <li><a href="<?php echo getURL("test/test_list_cart.php");?>">View Cart</a></li>
     <?php endif; ?>
