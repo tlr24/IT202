@@ -74,8 +74,8 @@ if(isset($id)){
             <label>Price</label>
             <input type="number" min="0.01" step="0.01" name="price" value="<?php echo $result["price"];?>"/>
             <label>Visible?</label>
-            <input type="radio" name="visible" value="1"/>Yes
-            <input type="radio" name="visible" value="0"/>No
+            <input type="radio" name="visible" value="1" <?php echo($result["visibility"] == '1')?'checked="checked"':''; ?>/>Yes
+            <input type="radio" name="visible" value="0" <?php echo($result["visibility"] == '0')?'checked="checked"':''; ?>/>No
             <input type="submit" name="save" value="Update"/>
         </p>
     </form>
