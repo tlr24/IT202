@@ -12,7 +12,7 @@ $categories = getCategories();
 if (isset($_POST["query"])) {
     $query = $_POST["query"];
 }
-$lookup_query = "SELECT id,name,quantity,price,description,visibility,user_id from Products WHERE ";
+$lookup_query = (has_role("Admin"))?"SELECT id,name,quantity,price,description,visibility,user_id from Products WHERE ":"SELECT id,name,quantity,price,description,visibility,user_id from Products WHERE visibility = '1' AND ";
 $asc_query = "ORDER BY price ASC LIMIT 10";
 $desc_query = "ORDER BY price DESC LIMIT 10";
 if (empty($query)) { // show all products initially
@@ -141,7 +141,6 @@ else if (isset($_POST["search"])) { // if search is filled out
 <?php if (count($results) > 0): ?>
     <div class="list-group">
         <?php foreach ($results as $r): ?>
-            <?php if ($r["visibility"] == '1' || has_role("Admin")): ?>
                 <div class="list-group-item">
                     <div class="card">
                         <form method = "POST">
@@ -168,7 +167,6 @@ else if (isset($_POST["search"])) { // if search is filled out
                         <button type="button" onClick="document.location.href='view_product.php?id=<?php safer_echo($r['id']); ?>'">View</button>
                     </div>
                 </div>
-            <?php endif; ?>
         <?php endforeach; ?>
     </div>
 <?php else: ?>
