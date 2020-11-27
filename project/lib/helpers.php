@@ -74,9 +74,18 @@ function getPrice($productID) {
     return $item["price"];
 }
 
+function getCategories() {
+    $db = getDB();
+    $stmt = (has_role("Admin")) ? $db->prepare("SELECT category from Products WHERE NOT category='' ") : $db->prepare("SELECT category from Products WHERE NOT category='' AND visibility='1'");
+    $r = $stmt->execute();
+    $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    return $categories;
+}
+
 function getURL($path) {
     if (substr($path, 0, 1) == "/") {
-        return path;                                                                                                        }
+        return path;
+    }
     return $_SERVER["CONTEXT_PREFIX"] . "/IT202repo/project/$path";
 }
 

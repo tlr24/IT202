@@ -17,7 +17,7 @@ if (!has_role("Admin")) {
             <label>Category</label>
             <input type="text" name="category" placeholder="Category"/>
             <label>Quantity</label>
-            <input type="number" min="1" name="quantity"/>
+            <input type="number" min="0" name="quantity"/>
             <label>Price</label>
             <input type="number" min="0.01" step="0.01" name="price"/>
             <label>Visible?</label>
