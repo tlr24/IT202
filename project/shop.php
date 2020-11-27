@@ -12,7 +12,7 @@ $categories = getCategories();
 if (isset($_POST["query"])) {
     $query = $_POST["query"];
 }
-$lookup_query = (has_role("Admin"))?"SELECT id,name,quantity,price,description,visibility,user_id from Products WHERE ":"SELECT id,name,quantity,price,description,visibility,user_id from Products WHERE visibility = '1' AND ";
+$lookup_query = (has_role("Admin"))?"SELECT id,name,quantity,price,description,visibility,user_id from Products WHERE ":"SELECT id,name,quantity,price,description,visibility,user_id from Products WHERE visibility = '1' AND quantity > '0' AND ";
 $asc_query = "ORDER BY price ASC LIMIT 10";
 $desc_query = "ORDER BY price DESC LIMIT 10";
 if (empty($query)) { // show all products initially
