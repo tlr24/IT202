@@ -68,7 +68,7 @@ if(isset($id)){
             <label>Description</label>
             <input type="text" name="description" placeholder="Description" value="<?php echo $result["description"];?>"/>
             <label>Category</label>
-            <input type="text" name="category" placeholder="Category"/>
+            <input type="text" name="category" placeholder="Category" value="<?php echo $result["category"];?>"/>
             <label>Quantity</label>
             <input type="number" min="0" name="quantity" value="<?php echo $result["quantity"];?>"/>
             <label>Price</label>
