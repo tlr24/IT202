@@ -21,8 +21,8 @@ if (!has_role("Admin")) {
             <label>Price</label>
             <input type="number" min="0.01" step="0.01" name="price"/>
             <label>Visible?</label>
-            <input type="radio" name="visible" value="1"/>Yes
-            <input type="radio" name="visible" value="0"/>No
+            <input type="radio" name="visible" value="1" />Yes
+            <input type="radio" name="visible" value="0" checked="checked"/>No
             <input type="submit" name="save" value="Create"/>
         </p>
     </form>
