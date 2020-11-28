@@ -1,8 +1,4 @@
 <?php require_once(__DIR__ . "/partials/nav.php"); ?>
-<?php
-//$balance = getBalance();
-$cost = 0;
-?>
 
 <h1>Shop</h1>
 <?php
@@ -185,7 +181,7 @@ else if (isset($_POST["search"])) { // if search is filled out
                     $price = getPrice($name);
                     $user = get_user_id();
                     $db = getDB();
-                    $stmt = $db->prepare("INSERT INTO Cart (product_id, quantity, price, user_id) VALUES(:name, :quantity, :price,:user)");
+                    $stmt = $db->prepare("INSERT INTO Cart (product_id, quantity, price, user_id) VALUES(:name, :quantity, :price,:user) ON DUPLICATE KEY UPDATE quantity = quantity + :quantity");
                     $r = $stmt->execute([
                         ":name" => $name,
                         ":quantity" => $quantity,

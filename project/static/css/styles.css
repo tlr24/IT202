@@ -47,7 +47,7 @@ input, select {
 }
 
 input[type=submit] {
-    width: 55%;
+    width: 200px;
     background-color: #9C27B0;
     color: white;
     padding: 14px 20px;
@@ -65,7 +65,7 @@ input[type=submit]:hover {
 
 div.list-group-item {
     display: inline-block;
-    width: 200px;
+    width: 250px;
     height: fit-content;
     padding: 20px;
     border: 1px solid #7b1fa2;
