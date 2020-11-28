@@ -162,7 +162,7 @@ else if (isset($_POST["search"])) { // if search is filled out
                     </div>
                     <div>
                         <?php if (has_role("Admin")): ?>
-                        <button type="button" onClick="document.location.href='test/test_edit_products.php?id=<?php safer_echo($r['id']); ?>'">Edit</button>
+                        <button type="button" onClick="document.location.href='edit_product.php?id=<?php safer_echo($r['id']); ?>'">Edit</button>
                         <?php endif; ?>
                         <button type="button" onClick="document.location.href='view_product.php?id=<?php safer_echo($r['id']); ?>'">View</button>
                     </div>
