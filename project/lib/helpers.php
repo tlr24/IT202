@@ -76,10 +76,16 @@ function getPrice($productID) {
 
 function getCategories() {
     $db = getDB();
-    $stmt = (has_role("Admin")) ? $db->prepare("SELECT category from Products WHERE NOT category='' ") : $db->prepare("SELECT category from Products WHERE NOT category='' AND visibility='1'");
+    $stmt = (has_role("Admin")) ? $db->prepare("SELECT category from Products WHERE NOT category='' ") : $db->prepare("SELECT category from Products WHERE NOT category='' AND visibility='1' AND quantity!='0'");
     $r = $stmt->execute();
     $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    return $categories;
+    $return_cats = [];
+    foreach($categories as $cat) {
+        if (!in_array($cat, $return_cats)) {
+            array_push($return_cats, $cat);
+        }
+    }
+    return $return_cats;
 }
 
 function getURL($path) {
