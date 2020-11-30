@@ -23,8 +23,8 @@ if (!has_role("Admin")) {
             <label>Visible?</label>
             <input type="radio" name="visible" value="1" />Yes
             <input type="radio" name="visible" value="0" checked="checked"/>No
-            <input type="submit" name="save" value="Create"/>
         </p>
+        <p><input type="submit" name="save" value="Create"/></p>
     </form>
 
 <?php
