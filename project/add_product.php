@@ -29,7 +29,6 @@ if (!has_role("Admin")) {
 
 <?php
 if(isset($_POST["save"])){
-    //TODO add proper validation/checks
     $name = $_POST["name"];
     $quantity = $_POST["quantity"];
     $price = $_POST["price"];
