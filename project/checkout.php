@@ -176,8 +176,6 @@ if(isset($_POST["purchase"])){
             if($result){
                 //flash("Deleted all items from cart", "success");
             }
-            flash("Successfully purchased");
-            flash($order_id);
             die(header("Location: order_confirmation.php?id=".$order_id));
         }
 
