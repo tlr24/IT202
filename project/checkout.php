@@ -10,7 +10,6 @@ if (!is_logged_in()) {
 $db = getDB();
 $total = 0;
 
-
 $stmt = $db->prepare("SELECT c.id, p.name, c.price, c.quantity, p.quantity as quan, (c.price * c.quantity) as sub, c.product_id from Cart as c JOIN Products as p on c.product_id = p.id where c.user_id = :id");
 $stmt->execute([":id"=>get_user_id()]);
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -104,9 +103,9 @@ if(isset($_POST["purchase"])){
     $isValid = true;
 
     // Address validation
-    if (!isset($street) || !isset($city) || !isset($state) || !isset($zipcode) || !isset($payment)) {
+    if (!$street || !$city || !$state || !$zipcode) {
         $isValid = false;
-        flash("Please all required information");
+        flash("Please enter all required information");
     }
     if (strlen($state) != 2) {
         $isValid = false;
@@ -116,7 +115,7 @@ if(isset($_POST["purchase"])){
         $isValid = false;
         flash("Please enter a valid zipcode");
     }
-    if (!is_numeric($payment) || $payment < $total) {
+    if (!isset($payment) || !is_numeric($payment) || $payment < $total) {
         $isValid = false;
         flash("Please enter a valid payment amount");
     }
