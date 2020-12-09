@@ -106,18 +106,16 @@ if(isset($_POST["purchase"])){
     if (!$street || !$city || !$state || !$zipcode) {
         $isValid = false;
         flash("Please enter all required information");
-        if ($state) {
-            if (strlen($state) != 2) {
-                flash("Please enter a valid state (example format: NJ)");
-            }
-        }
-        if ($zipcode) {
-            if (!is_numeric($zipcode)) {
-                flash("Please enter a valid zipcode");
-            }
-        }
     }
-    if (!isset($payment) || !is_numeric($payment) || $payment < $total) {
+    if (strlen($state) != 2) {
+        $isValid = false;
+        flash("Please enter a valid state (example format: NJ)");
+    }
+    if (!is_numeric($zipcode)) {
+        $isValid = false;
+        flash("Please enter a valid zipcode");
+    }
+    if (!$payment || !is_numeric($payment) || $payment < $total) {
         $isValid = false;
         flash("Please enter a valid payment amount");
     }
@@ -179,7 +177,8 @@ if(isset($_POST["purchase"])){
                 //flash("Deleted all items from cart", "success");
             }
             flash("Successfully purchased");
-            die(header("Location: order_confirmation.php?id=".safer_echo($order_id)));
+            flash($order_id);
+            die(header("Location: order_confirmation.php?id=".$order_id));
         }
 
     }

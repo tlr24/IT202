@@ -26,14 +26,14 @@ if (isset($id)) {
     <p><b>User: </b><?php safer_echo(get_username($result["0"]["user_id"])); ?></p>
     <p><b>Address: </b><?php safer_echo($result["0"]["address"]); ?></p>
     <p><b>Payment Method: </b><?php safer_echo($result["0"]["payment_method"]); ?></p>
+    <h3>Purchased Items:</h3>
     <?php foreach($result as $r): ?>
     <div class="card">
         <div class="card-title">
-            <h3><?php safer_echo(getProductName($r["product_id"])); ?></h3>
+            <h4><?php safer_echo(getProductName($r["product_id"])); ?></h4>
         </div>
         <div class="card-body">
             <div>
-                <p>Information</p>
                 <div><b>Price: </b>$<?php safer_echo($r["unit_price"]); ?></div>
                 <div><b>Quantity: </b><?php safer_echo($r["quantity"]); ?></div>
                 <div><b>Subtotal: </b>$<?php safer_echo($r["sub"]); ?></div>
