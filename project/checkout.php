@@ -78,11 +78,6 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <?php
 if(isset($_POST["purchase"])){
-    //$stmt = $db->prepare("DELETE FROM Cart where user_id = :uid");
-    //$r = $stmt->execute([":uid"=>get_user_id()]);
-    //if($r){
-    //    flash("Deleted all items from cart", "success");
-    //}
     $street = null;
     $city = null;
     $state = null;
@@ -140,7 +135,7 @@ if(isset($_POST["purchase"])){
                     $canPurchase = false;
                 }
                 else {
-                    flash("Can purchase " . $r["name"]);
+                    //flash("Can purchase " . $r["name"]);
                 }
             }
         }
@@ -162,10 +157,27 @@ if(isset($_POST["purchase"])){
                     ":product_id"=>$r["product_id"],
                     ":quantity"=>$r["quantity"]
                 ]);
+                // update item quantity from Products table
+                $stmt3 = $db->prepare("UPDATE Products set quantity = :quantity where id = :product_id");
+                $stmt3->execute([":quantity"=>($r["quan"]-$r["quantity"]),
+                    ":product_id"=>$r["product_id"]
+                ]);
+                if($r){
+                    //flash("Successfully updated quantity");
+                }
+                else{
+                    $e = $stmt3->errorInfo();
+                    flash("Error purchasing products");
+                }
             }
-            // update item quantity from Products table
-            //$stmt3 = $db->prepare("SELECT quantity from Products where id = :product_id");
+            // clear out the user's cart
+            $stmt4 = $db->prepare("DELETE FROM Cart where user_id = :uid");
+            $result = $stmt4->execute([":uid"=>get_user_id()]);
+            if($result){
+                //flash("Deleted all items from cart", "success");
+            }
             flash("Successfully purchased");
+            die(header("Location: order_confirmation.php?id=".$order_id));
         }
 
     }
