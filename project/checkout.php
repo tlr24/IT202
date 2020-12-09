@@ -32,6 +32,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <option value="Mastercard">Mastercard</option>
             <option value="Visa">Visa</option>
             <option value="Discover">Discover</option>
+            <option value="PayPal">PayPal</option>
         </select>
         <b>Pay Amount:</b>
         <input type="number" min="0" name="payment" step="0.01" value="0" form="form"/>
@@ -177,7 +178,7 @@ if(isset($_POST["purchase"])){
                 //flash("Deleted all items from cart", "success");
             }
             flash("Successfully purchased");
-            die(header("Location: order_confirmation.php?id=".$order_id));
+            die(header("Location: order_confirmation.php?id=".safer_echo($order_id)));
         }
 
     }

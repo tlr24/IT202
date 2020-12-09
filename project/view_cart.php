@@ -79,9 +79,9 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <?php $total += floatval($r["sub"]);?>
                     </div>
                     <div class="col">
+                        <input type="hidden" name="cartId" value="<?php echo $r["id"];?>"/>
                         <input type="submit" class="btn btn-success" name="update" value="Update"/>
-                        <input type="hidden" name="cartId" value="<?php echo $r["id"];?>" form="form"/>
-                        <input type="submit" class="btn btn-danger" name="delete" value="Delete" form="form"/>
+                        <input type="submit" class="btn btn-danger" name="delete" value="Delete"/>
 
             </form>
         </div>
