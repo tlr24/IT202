@@ -75,7 +75,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <?php endif;?>
     </div>
     </div>
-    <input type="submit" class="btn btn-success" name="purchase" value="Submit Order" form="form"/>
+    <input type="submit" class="btn btn-success" name="purchase" value="Place Order" form="form"/>
 
 <?php
 if(isset($_POST["purchase"])){
