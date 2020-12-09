@@ -17,14 +17,15 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
     <div class="container-fluid">
     <h1>Checkout</h1>
+<?php if($results && count($results) > 0):?>
     <h3>Order Information</h3>
     <form method="POST" form="form">
         <b>Address:</b>
         <p>
-            <input name="street" placeholder="Street Address" form="form">
-            <input name="city" placeholder="City" form="form">
-            <input name="state" placeholder="State" form="form">
-            <input type="number" name="zipcode" placeholder="Zip Code" form="form">
+            <input name="street" placeholder="Street Address" form="form" value="<?php isset($_POST["street"])?safer_echo($_POST["street"]):"";?>">
+            <input name="city" placeholder="City" form="form" value="<?php isset($_POST["city"])?safer_echo($_POST["city"]):"";?>">
+            <input name="state" placeholder="State" form="form" value="<?php isset($_POST["state"])?safer_echo($_POST["state"]):"";?>">
+            <input type="number" name="zipcode" placeholder="Zip Code" form="form" value="<?php isset($_POST["zipcode"])?safer_echo($_POST["zipcode"]):"";?>">
         </p>
         <b>Payment Method:</b>
         <select name="method" form="form">
@@ -37,6 +38,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </form>
     <h3>Order Summary</h3>
     <div class="list-group">
+<?php endif; ?>
 <?php if($results && count($results) > 0):?>
     <?php foreach($results as $r):?>
         <div class="list-group-item">
@@ -47,7 +49,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     </div>
                     <div class="col">
                         $<?php echo number_format($r["price"], 2);?>
-                        <button type="button" onClick="document.location.href='view_product.php?id=<?php safer_echo($r['product_id']); ?>'">View</button>
+                        <button type="button" onClick="document.location.href='view_cart.php'">Update</button>
                     </div>
                     <div class="col">
                         <b>Quantity:</b>
@@ -98,7 +100,7 @@ if(isset($_POST["purchase"])){
         $zipcode = $_POST["zipcode"];
     }
     if (isset($_POST["method"])) {
-        $payment = $_POST["method"];
+        $method = $_POST["method"];
     }
     if (isset($_POST["payment"])) {
         $payment = $_POST["payment"];
@@ -125,19 +127,47 @@ if(isset($_POST["purchase"])){
 
     // once the validation is done
     if ($isValid) {
+        $canPurchase = true;
+        // check for product availability
         if ($results && count($results) > 0) {
             foreach ($results as $r) {
-                if ($r["quantity"] > $r["quan"]) {
-                    flash("Only " . $r["quantity"] . "left of " . $r["name"]);
+                if ($r["quan"] == 0) {
+                    flash($r["name"] . " is currently out of stock. Please update the cart and try again.");
+                    $canPurchase = false;
                 }
-                else if ($r["quantity"] == 0) {
-                    flash($r["name"] . " is currently out of stock");
+                else if ($r["quantity"] > $r["quan"]) {
+                    flash("Only " . $r["quan"] . " left of " . $r["name"] . ". Please update the quantity and try again.");
+                    $canPurchase = false;
                 }
                 else {
                     flash("Can purchase " . $r["name"]);
                 }
             }
         }
+        if ($canPurchase) {
+            // place order in Orders table
+            $full_address = $street . " " . $city . ", " . $state . " " . $zipcode;
+            $stmt1 = $db->prepare("INSERT into Orders (total_price, address, payment_method, user_id) VALUES (:total_price, :address, :payment_method, :id)");
+            $stmt1->execute([":total_price"=>$total,
+                ":id"=>get_user_id(),
+                ":address"=>$full_address,
+                ":payment_method"=>$method
+            ]);
+            // place order items in OrderItems table
+            $order_id = $db->lastInsertId();
+            foreach ($results as $r) {
+                $stmt2 = $db->prepare("INSERT into OrderItems (unit_price, quantity, order_id, product_id) VALUES (:unit_price, :quantity, :order_id, :product_id)");
+                $stmt2->execute([":unit_price"=>$r["price"],
+                    ":order_id"=>$order_id,
+                    ":product_id"=>$r["product_id"],
+                    ":quantity"=>$r["quantity"]
+                ]);
+            }
+            // update item quantity from Products table
+            //$stmt3 = $db->prepare("SELECT quantity from Products where id = :product_id");
+            flash("Successfully purchased");
+        }
+
     }
 }
 ?>
