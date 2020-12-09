@@ -74,6 +74,14 @@ function getPrice($productID) {
     return $item["price"];
 }
 
+function getProductName($productID) {
+    $db = getDB();
+    $stmt = $db->prepare("SELECT name from Products where id = :id");
+    $result = $stmt->execute([":id" => $productID]);
+    $item = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $item["name"];
+}
+
 function getCategories() {
     $db = getDB();
     $stmt = (has_role("Admin")) ? $db->prepare("SELECT category from Products WHERE NOT category='' ") : $db->prepare("SELECT category from Products WHERE NOT category='' AND visibility='1' AND quantity!='0'");

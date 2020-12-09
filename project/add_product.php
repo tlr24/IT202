@@ -23,13 +23,12 @@ if (!has_role("Admin")) {
             <label>Visible?</label>
             <input type="radio" name="visible" value="1" />Yes
             <input type="radio" name="visible" value="0" checked="checked"/>No
-            <input type="submit" name="save" value="Create"/>
         </p>
+        <p><input type="submit" name="save" value="Create"/></p>
     </form>
 
 <?php
 if(isset($_POST["save"])){
-    //TODO add proper validation/checks
     $name = $_POST["name"];
     $quantity = $_POST["quantity"];
     $price = $_POST["price"];

@@ -55,6 +55,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <?php if($results && count($results) > 0):?>
 <div>
     <input type="submit" class="btn btn-danger" name="delete_all" value="Delete All Items" form="form"/>
+    <input type="submit" class="btn btn-danger" name="checkout" value="Checkout" onclick="document.location.href='checkout.php'"/>
 </div>
     <?php foreach($results as $r):?>
         <div class="list-group-item">
@@ -78,9 +79,9 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <?php $total += floatval($r["sub"]);?>
                     </div>
                     <div class="col">
+                        <input type="hidden" name="cartId" value="<?php echo $r["id"];?>"/>
                         <input type="submit" class="btn btn-success" name="update" value="Update"/>
-                        <input type="hidden" name="cartId" value="<?php echo $r["id"];?>" form="form"/>
-                        <input type="submit" class="btn btn-danger" name="delete" value="Delete" form="form"/>
+                        <input type="submit" class="btn btn-danger" name="delete" value="Delete"/>
 
             </form>
         </div>
