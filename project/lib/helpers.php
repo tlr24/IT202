@@ -23,6 +23,14 @@ function get_username() {
     return "";
 }
 
+function get_username_from_id($id) {
+    $db = getDB();
+    $stmt = $db->prepare("SELECT username from Users where id = :id");
+    $result = $stmt->execute([":id" => $id]);
+    $item = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $item["username"];
+}
+
 function get_email() {
     if (is_logged_in() && isset($_SESSION["user"]["email"])) {
         return $_SESSION["user"]["email"];
