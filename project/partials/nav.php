@@ -14,8 +14,9 @@ require_once(__DIR__ . "/../lib/helpers.php");
         <li><a href="<?php echo getURL("add_product.php");?>">Add Product</a></li>
     <?php endif; ?>
     <?php if(is_logged_in()):?>
+        <li><a href="<?php echo getURL("profile.php");?>">Profile</a></li>
         <li><a href="<?php echo getURL("view_cart.php");?>">Cart</a></li>
-    	<li><a href="<?php echo getURL("profile.php");?>">Profile</a></li>
+        <li><a href="<?php echo getURL("purchase_history.php");?>">Purchase History</a></li>
     	<li><a href="<?php echo getURL("logout.php");?>">Logout</a></li>
     <?php endif; ?>
 </ul></nav>
