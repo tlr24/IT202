@@ -5,6 +5,7 @@ if (isset($_GET["id"])) {
     $id = $_GET["id"];
 }
 ?>
+
 <?php
 //fetching
 $result = [];
@@ -37,10 +38,84 @@ if (isset($id)) {
                     <div><b>Visible: </b><?php $vis = ($result["visibility"] == "0")?"no":"yes"; safer_echo($vis);?></div>
                 <?php endif; ?>
             </div>
+            <div>
+                <p>Ratings</p>
+                <p><b>_ out of 5 stars</b></p>
+            </div>
+            <div>
+                <form method="POST">
+                    <p>Write a customer review</p>
+                    <select name="rating" >
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                    <input name="comment" value="" maxlength="120"/>
+                    <input type="submit" value="Submit" name="rate"/>
+                </form>
+            </div>
         </div>
     </div>
 <?php else: ?>
     <p>Error looking up id...</p>
 <?php endif; ?>
+
+
+<?php
+if (isset($_POST["rate"])) { // if ratings is filled out
+    $db = getDB();
+    $rating = null;
+    $comment = null;
+    if (isset($_POST["rating"])) {
+        $rating = $_POST["rating"];
+    }
+    if (isset($_POST["comment"])) {
+        $comment = $_POST["comment"];
+    }
+    $isValid = true;
+
+    // Rating validation
+    if (!$rating || !$comment) {
+        $isValid = false;
+        flash("Please finish your review");
+    }
+    if ($rating == "" || ($rating != "1" && $rating != "2" && $rating != "3" && $rating != "4" && $rating != "5")) {
+        $isValid = false;
+        flash("Please include a rating");
+    }
+    if (strlen($comment) >= 120) {
+        $isValid = false;
+        flash("Comment maximum is 120 characters");
+    }
+    $valid_stmt = $db->prepare("SELECT count(o.id) as amount from Orders as o JOIN OrderItems as oi on oi.order_id = o.id where o.user_id = :uid AND oi.product_id = :pid LIMIT 10");
+    $r1 = $valid_stmt->execute([":pid" => $_GET["id"], ":uid" => get_user_id()]);
+    if ($r1) {
+        $result = $valid_stmt->fetch(PDO::FETCH_ASSOC);
+        $amount_bought = $result["amount"];
+        if ($amount_bought == "0") {
+            $isValid = false;
+            flash("You haven't purchased this item");
+        }
+    }
+    else {
+        $isValid = false;
+    }
+
+    if ($isValid) {
+        $stmt = $db->prepare("INSERT into Ratings (product_id, user_id, rating, comment) VALUES (:pid, :uid, :rating, :comment)");
+        $r = $stmt->execute([":pid" => $_GET["id"], ":uid" => get_user_id(), ":rating" => $rating, ":comment" => $comment]);
+        if ($r) {
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        }
+        else {
+            flash("There was a problem submitting review");
+            flash(var_dump($stmt->errorInfo()));
+        }
+    }
+
+}
+?>
 
 <?php require(__DIR__ . "/partials/flash.php");
