@@ -2,6 +2,12 @@
 
 <h1>Shop</h1>
 <?php
+
+$per_page = 10;
+
+$db = getDB();
+$pag_query = (has_role("Admin"))?"SELECT count(*) as total from Products WHERE ":"SELECT count(*) as total from Products WHERE visibility = '1' AND quantity > '0' AND ";
+
 $query = "";
 $results = [];
 $categories = getCategories();
@@ -11,6 +17,7 @@ if (isset($_POST["query"])) {
 $lookup_query = (has_role("Admin"))?"SELECT id,name,quantity,price,description,visibility,user_id from Products WHERE ":"SELECT id,name,quantity,price,description,visibility,user_id from Products WHERE visibility = '1' AND quantity > '0' AND ";
 $asc_query = "ORDER BY price ASC LIMIT 10";
 $desc_query = "ORDER BY price DESC LIMIT 10";
+$limit_query = "LIMIT :offset, :count";
 if (empty($query)) { // show all products initially
     $db = getDB();
     if (isset($_POST["category"])) {
@@ -18,50 +25,71 @@ if (empty($query)) { // show all products initially
         if ($curr_category != "") { // if the query is empty but a category is chosen
             switch ($_POST["sort"]) {
                 case "asc":
-                    $stmt = $db->prepare($lookup_query . "category=:category " . $asc_query);
+                    $stmt = $db->prepare($lookup_query . "category=:category " . $asc_query . $limit_query);
                     break;
                 case "desc":
-                    $stmt = $db->prepare($lookup_query . "category=:category " . $desc_query);
+                    $stmt = $db->prepare($lookup_query . "category=:category " . $desc_query . $limit_query);
                     break;
                 default:
-                    $stmt = $db->prepare($lookup_query . "category=:category ");
+                    $stmt = $db->prepare($lookup_query . "category=:category " . $limit_query);
                     break;
             }
-            $r = $stmt->execute([":category" => $curr_category]);
+            $params = [":category" => $curr_category];
+            $pag_query .= "category=:category ";
+            paginate($pag_query, $params, $per_page);
+            //$r = $stmt->execute([":category" => $curr_category]);
+            $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+            $stmt->bindValue(":count", $per_page, PDO::PARAM_INT);
+            $stmt->bindValue(":category", $curr_category);
+            $r = $stmt->execute();
         }
         else { // if the query is empty and category is not chosen
             switch ($_POST["sort"]) {
                 case "asc":
-                    $stmt = $db->prepare($lookup_query . "name like :q " . $asc_query);
+                    $stmt = $db->prepare($lookup_query . "name like :q " . $asc_query . $limit_query);
                     break;
                 case "desc":
-                    $stmt = $db->prepare($lookup_query . "name like :q " . $desc_query);
+                    $stmt = $db->prepare($lookup_query . "name like :q " . $desc_query . $limit_query);
                     break;
                 default:
-                    $stmt = $db->prepare($lookup_query . "name like :q ");
+                    $stmt = $db->prepare($lookup_query . "name like :q " . $limit_query);
                     break;
             }
-            $r = $stmt->execute([":q" => "%$query%"]);
+            $params = [":q" => "%$query%"];
+            $pag_query .= "name like :q ";
+            paginate($pag_query, $params, $per_page);
+            //$r = $stmt->execute([":q" => "%$query%"]);
+            $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+            $stmt->bindValue(":count", $per_page, PDO::PARAM_INT);
+            $stmt->bindValue(":q", "%$query%");
+            $r = $stmt->execute();
         }
     }
     else { // if query is empty and category isn't set
         if (isset($_POST["sort"])) { // if price sort is set
             switch ($_POST["sort"]) {
                 case "asc":
-                    $stmt = $db->prepare($lookup_query . "name like :q " . $asc_query);
+                    $stmt = $db->prepare($lookup_query . "name like :q " . $asc_query . $limit_query);
                     break;
                 case "desc":
-                    $stmt = $db->prepare($lookup_query . "name like :q " . $desc_query);
+                    $stmt = $db->prepare($lookup_query . "name like :q " . $desc_query . $limit_query);
                     break;
                 default:
-                    $stmt = $db->prepare($lookup_query . "name like :q ");
+                    $stmt = $db->prepare($lookup_query . "name like :q " . $limit_query);
                     break;
             }
         } // if price sort isn't set
         else {
-            $stmt = $db->prepare($lookup_query . "name like :q ");
+            $stmt = $db->prepare($lookup_query . "name like :q " . $limit_query);
         }
-        $r = $stmt->execute([":q" => "%$query%"]);
+        $params = [":q" => "%$query%"];
+        $pag_query .= "name like :q ";
+        paginate($pag_query, $params, $per_page);
+        //$r = $stmt->execute([":q" => "%$query%"]);
+        $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+        $stmt->bindValue(":count", $per_page, PDO::PARAM_INT);
+        $stmt->bindValue(":q", "%$query%");
+        $r = $stmt->execute();
     }
 
     if ($r) {
@@ -77,32 +105,47 @@ else if (isset($_POST["search"])) { // if search is filled out
     if ($curr_category == "") { // if no category is chosen
         switch ($_POST["sort"]) {
             case "asc":
-                $stmt = $db->prepare($lookup_query . "name like :q " . $asc_query);
+                $stmt = $db->prepare($lookup_query . "name like :q " . $asc_query . $limit_query);
                 break;
             case "desc":
-                $stmt = $db->prepare($lookup_query . "name like :q " . $desc_query);
+                $stmt = $db->prepare($lookup_query . "name like :q " . $desc_query . $limit_query);
                 break;
             default:
-                $stmt = $db->prepare($lookup_query . "name like :q ");
+                $stmt = $db->prepare($lookup_query . "name like :q " . $limit_query);
                 break;
         }
+        $params = [":q" => "%$query%"];
+        $pag_query .= "name like :q ";
+        paginate($pag_query, $params, $per_page);
         //$stmt = $db->prepare($lookup_query . "name like :q " . $asc_query);
-        $r = $stmt->execute([":q" => "%$query%"]);
+        //$r = $stmt->execute([":q" => "%$query%"]);
+        $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+        $stmt->bindValue(":count", $per_page, PDO::PARAM_INT);
+        $stmt->bindValue(":q", "%$query%");
+        $r = $stmt->execute();
     }
     else { // if a category is picked
         switch ($_POST["sort"]) {
             case "asc":
-                $stmt = $db->prepare($lookup_query . "name like :q AND category=:category " . $asc_query);
+                $stmt = $db->prepare($lookup_query . "name like :q AND category=:category " . $asc_query . $limit_query);
                 break;
             case "desc":
-                $stmt = $db->prepare($lookup_query . "name like :q AND category=:category " . $desc_query);
+                $stmt = $db->prepare($lookup_query . "name like :q AND category=:category " . $desc_query . $limit_query);
                 break;
             default:
-                $stmt = $db->prepare($lookup_query . "name like :q AND category=:category ");
+                $stmt = $db->prepare($lookup_query . "name like :q AND category=:category " . $limit_query);
                 break;
         }
+        $params = [":q" => "%$query%", ":category" => $curr_category];
+        $pag_query .= "name like :q  AND category=:category ";
+        paginate($pag_query, $params, $per_page);
         //$stmt = $db->prepare($lookup_query . "name like :q AND category=:category " . $asc_query);
-        $r = $stmt->execute([":q" => "%$query%", ":category" => $curr_category]);
+        //$r = $stmt->execute([":q" => "%$query%", ":category" => $curr_category]);
+        $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+        $stmt->bindValue(":count", $per_page, PDO::PARAM_INT);
+        $stmt->bindValue(":q", "%$query%");
+        $stmt->bindValue(":category", $curr_category);
+        $r = $stmt->execute();
     }
     if ($r) {
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -164,6 +207,9 @@ else if (isset($_POST["search"])) { // if search is filled out
                     </div>
                 </div>
         <?php endforeach; ?>
+    </div>
+    </div>
+    <?php include(__DIR__."/partials/pagination.php");?>
     </div>
 <?php else: ?>
     <p>No results</p>
