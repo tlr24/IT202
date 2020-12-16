@@ -125,32 +125,43 @@ if (isset($_POST["rate"])) { // if ratings is filled out
     }
     $isValid = true;
 
-    // Rating validation
-    if (!$rating || !$comment) {
+    if (!is_logged_in()) {
         $isValid = false;
-        flash("Please finish your review");
-    }
-    if ($rating != "1" && $rating != "2" && $rating != "3" && $rating != "4" && $rating != "5") {
-        $isValid = false;
-        flash("Please include a rating");
-    }
-    if (strlen($comment) >= 120) {
-        $isValid = false;
-        flash("Comment maximum is 120 characters");
-    }
-    $valid_stmt = $db->prepare("SELECT count(o.id) as amount from Orders as o JOIN OrderItems as oi on oi.order_id = o.id where o.user_id = :uid AND oi.product_id = :pid LIMIT 10");
-    $r1 = $valid_stmt->execute([":pid" => $_GET["id"], ":uid" => get_user_id()]);
-    if ($r1) {
-        $result = $valid_stmt->fetch(PDO::FETCH_ASSOC);
-        $amount_bought = $result["amount"];
-        if ($amount_bought == "0") {
-            $isValid = false;
-            flash("You haven't purchased this item");
-        }
+        flash("Must be logged in to review products");
     }
     else {
-        $isValid = false;
+        $valid_stmt = $db->prepare("SELECT count(o.id) as amount from Orders as o JOIN OrderItems as oi on oi.order_id = o.id where o.user_id = :uid AND oi.product_id = :pid LIMIT 10");
+        $r1 = $valid_stmt->execute([":pid" => $_GET["id"], ":uid" => get_user_id()]);
+        if ($r1) {
+            $result = $valid_stmt->fetch(PDO::FETCH_ASSOC);
+            $amount_bought = $result["amount"];
+            if ($amount_bought == "0") {
+                $isValid = false;
+                flash("You haven't purchased this item");
+            }
+            else {
+                // Rating validation
+                if (!$rating || !$comment) {
+                    $isValid = false;
+                    flash("Please finish your review");
+                }
+                if ($rating != "1" && $rating != "2" && $rating != "3" && $rating != "4" && $rating != "5") {
+                    $isValid = false;
+                    flash("Please include a rating");
+                }
+                if (strlen($comment) >= 120) {
+                    $isValid = false;
+                    flash("Comment maximum is 120 characters");
+                }
+            }
+        }
+        else {
+            $isValid = false;
+        }
+
     }
+
+
 
     if ($isValid) {
         $stmt = $db->prepare("INSERT into Ratings (product_id, user_id, rating, comment) VALUES (:pid, :uid, :rating, :comment) ON DUPLICATE KEY UPDATE rating = :rating, comment = :comment");
