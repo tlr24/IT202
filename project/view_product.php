@@ -19,6 +19,17 @@ if (isset($id)) {
         flash($e[2]);
     }
 }
+// pulling all of the reviews
+$db = getDB();
+$stmt = $db->prepare("SELECT u.username, r.user_id, r.rating, r.comment FROM Ratings as r JOIN Users as u on u.id = r.user_id WHERE product_id = :pid LIMIT 10");
+$r = $stmt->execute(["pid" => $id]);
+$product_ratings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$stmt = $db->prepare("SELECT ROUND(AVG(rating), 2) as average FROM Ratings WHERE product_id = :pid");
+$r = $stmt->execute(["pid" => $id]);
+$result1 = $stmt->fetch(PDO::FETCH_ASSOC);
+$average_rating = $result1["average"];
+
 ?>
 
 <?php if (isset($result) && !empty($result)): ?>
@@ -38,25 +49,45 @@ if (isset($id)) {
                     <div><b>Visible: </b><?php $vis = ($result["visibility"] == "0")?"no":"yes"; safer_echo($vis);?></div>
                 <?php endif; ?>
             </div>
-            <div>
-                <p>Ratings</p>
-                <p><b>_ out of 5 stars</b></p>
-            </div>
-            <div>
-                <form method="POST">
-                    <p>Write a customer review</p>
-                    <select name="rating" >
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                    </select>
-                    <input name="comment" value="" maxlength="120"/>
-                    <input type="submit" value="Submit" name="rate"/>
-                </form>
-            </div>
         </div>
+    </div>
+    <div>
+        <h2>Reviews</h2>
+        <?php if (isset($product_ratings) && !empty($product_ratings)): ?>
+            <p><b><?php echo $average_rating; ?> out of 5 stars</b></p>
+            <div class="list-group">
+            <?php foreach ($product_ratings as $rate): ?>
+                <div class="list-group-item">
+                    <div class="card">
+                        <div class="card-title">
+                            <p><b>User: </b><?php safer_echo($rate["username"]); ?></p>
+                        </div>
+                        <div class="card-body">
+                            <div><b>Rating: </b><?php safer_echo($rate["rating"]); ?> stars</div>
+                            <div><b>Comment: </b><?php safer_echo($rate["comment"]); ?></div>
+                        </div>
+                    </div>
+                </div>
+
+            <?php endforeach; ?>
+            </div>
+        <?php else: ?>
+            <p>No reviews yet.</p>
+        <?php endif; ?>
+    </div>
+    <div>
+        <form method="POST">
+            <h2>Write a customer review</h2>
+            <select name="rating" >
+                <option value="1">1 star</option>
+                <option value="2">2 stars</option>
+                <option value="3">3 stars</option>
+                <option value="4">4 stars</option>
+                <option value="5">5 stars</option>
+            </select>
+            <input name="comment" value="" maxlength="120" placeholder ="Enter product review..."/>
+            <input type="submit" value="Submit" name="rate"/>
+        </form>
     </div>
 <?php else: ?>
     <p>Error looking up id...</p>
@@ -81,7 +112,7 @@ if (isset($_POST["rate"])) { // if ratings is filled out
         $isValid = false;
         flash("Please finish your review");
     }
-    if ($rating == "" || ($rating != "1" && $rating != "2" && $rating != "3" && $rating != "4" && $rating != "5")) {
+    if ($rating != "1" && $rating != "2" && $rating != "3" && $rating != "4" && $rating != "5") {
         $isValid = false;
         flash("Please include a rating");
     }
@@ -104,14 +135,14 @@ if (isset($_POST["rate"])) { // if ratings is filled out
     }
 
     if ($isValid) {
-        $stmt = $db->prepare("INSERT into Ratings (product_id, user_id, rating, comment) VALUES (:pid, :uid, :rating, :comment)");
+        $stmt = $db->prepare("INSERT into Ratings (product_id, user_id, rating, comment) VALUES (:pid, :uid, :rating, :comment) ON DUPLICATE KEY UPDATE rating = :rating, comment = :comment");
         $r = $stmt->execute([":pid" => $_GET["id"], ":uid" => get_user_id(), ":rating" => $rating, ":comment" => $comment]);
         if ($r) {
             $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            die(header("Location: view_product.php?id=" . $id));
         }
         else {
             flash("There was a problem submitting review");
-            flash(var_dump($stmt->errorInfo()));
         }
     }
 
