@@ -22,6 +22,20 @@ function get_username() {
     }
     return "";
 }
+function get_firstname($id) {
+    $db = getDB();
+    $stmt = $db->prepare("SELECT first_name from Users where id = :id");
+    $result = $stmt->execute([":id" => $id]);
+    $item = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $item["first_name"];
+}
+function get_lastname($id) {
+    $db = getDB();
+    $stmt = $db->prepare("SELECT last_name from Users where id = :id");
+    $result = $stmt->execute([":id" => $id]);
+    $item = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $item["last_name"];
+}
 
 function get_username_from_id($id) {
     $db = getDB();

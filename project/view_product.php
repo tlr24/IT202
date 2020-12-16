@@ -11,7 +11,7 @@ if (isset($_GET["id"])) {
 $product_result = [];
 if (isset($id)) {
     $db = getDB();
-    $stmt = $db->prepare("SELECT Products.id,name,quantity,price,description,category,visibility,user_id, Users.username FROM Products as Products JOIN Users on Products.user_id = Users.id where Products.id = :id");
+    $stmt = $db->prepare("SELECT p.id,name,quantity,price,description,category,p.visibility,user_id, Users.username FROM Products as p JOIN Users on p.user_id = Users.id where p.id = :id");
     $r = $stmt->execute([":id" => $id]);
     $product_result = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$product_result) {
@@ -144,7 +144,8 @@ if (isset($_POST["rate"])) { // if ratings is filled out
                 <div class="list-group-item">
                     <div class="card">
                         <div class="card-title">
-                            <p><b>User: </b><?php safer_echo($rate["username"]); ?></p>
+                            <?php $profile_link = "profile.php?id=" . $rate["user_id"] ?>
+                            <p><b>User: </b><a href=<?php echo $profile_link?>><?php safer_echo($rate["username"]);?></a></p>
                         </div>
                         <div class="card-body">
                             <div><b>Rating: </b><?php safer_echo($rate["rating"]); ?> stars</div>

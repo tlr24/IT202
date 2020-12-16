@@ -7,6 +7,8 @@ if (isset($_POST["register"])) {
     $password = null;
     $confirm = null;
     $username = null;
+    $first_name = null;
+    $last_name = null;
     if (isset($_POST["email"])) {
         $email = $_POST["email"];
     }
@@ -19,6 +21,12 @@ if (isset($_POST["register"])) {
     if (isset($_POST["username"])) {
         $username = $_POST["username"];
     }
+    if (isset($_POST["first"])) {
+        $first_name = $_POST["first"];
+    }
+    if (isset($_POST["last"])) {
+        $last_name = $_POST["last"];
+    }
     $isValid = true;
     //check if passwords match on the server side
     if ($password == $confirm) {
@@ -28,7 +36,7 @@ if (isset($_POST["register"])) {
         flash("Passwords don't match");
         $isValid = false;
     }
-    if (!isset($email) || !isset($username) || !isset($password) || !isset($confirm)) {
+    if (!isset($email) || !isset($username) || !isset($password) || !isset($confirm) || !isset($first_name) || !isset($last_name)) {
         $isValid = false;
     }
     if (!strpos($email, "@")) {
@@ -42,9 +50,9 @@ if (isset($_POST["register"])) {
         $db = getDB();
         if (isset($db)) {
             //here we'll use placeholders to let PDO map and sanitize our data
-            $stmt = $db->prepare("INSERT INTO Users(email, username, password) VALUES(:email,:username, :password)");
+            $stmt = $db->prepare("INSERT INTO Users(email, username, first_name, last_name, password) VALUES(:email, :username, :first, :last, :password)");
             //here's the data map for the parameter to data
-            $params = array(":email" => $email, ":username" => $username, ":password" => $hash);
+            $params = array(":email" => $email, ":username" => $username, ":first" => $first_name, ":last" => $last_name, ":password" => $hash);
             $r = $stmt->execute($params);
             //let's just see what's returned
             //echo "db returned: " . var_export($r, true);
@@ -74,6 +82,12 @@ if (!isset($email)) {
 if (!isset($username)) {
     $username = "";
 }
+if (!isset($first_name)) {
+    $first_name = "";
+}
+if (!isset($last_name)) {
+    $last_name = "";
+}
 ?>
 <form method="POST">
   <p>
@@ -84,6 +98,14 @@ if (!isset($username)) {
     <label for="user">Username:</label>
     <input type="text" id="user" name="username" required maxlength="60" value="<?php safer_echo($username); ?>"/>
   </p>
+    <p>
+        <label for="first">First Name:</label>
+        <input type="text" id="first" name="first" required maxlength="30" value="<?php safer_echo($first_name); ?>"/>
+    </p>
+    <p>
+        <label for="last">Last Name:</label>
+        <input type="text" id="last" name="last" required maxlength="30" value="<?php safer_echo($last_name); ?>"/>
+    </p>
   <p>
     <label for="p1">Password:</label>
     <input type="password" id="p1" name="password" maxlength="60" required/>

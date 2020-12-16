@@ -12,6 +12,25 @@ if (!is_logged_in()) {
 }
 
 $db = getDB();
+
+$public_profile = false;
+// get id of user profile
+if (isset($_GET["id"])) {
+    $id = $_GET["id"];
+    $stmt = $db->prepare("SELECT username, first_name, last_name, created, visibility from Users where id = :id");
+    $stmt->execute([":id" => $id]);
+    $user_info = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($user_info) {
+        if ($user_info["visibility"] == 1) {
+            $public_profile = true;
+        }
+        else {
+            flash("Cannot access page, user is private");
+            die(header("Location: home.php"));
+        }
+    }
+}
+
 //save data if we submitted the form
 if (isset($_POST["saved"])) {
     $isValid = true;
@@ -65,9 +84,20 @@ if (isset($_POST["saved"])) {
             $newUsername = $username;
         }
     }
+    $newFirstName = $_POST["first_name"];
+    if (strlen($newFirstName) == 0) {
+        flash("Please enter a first name");
+        $isValid = false;
+    }
+    $newLastName = $_POST["last_name"];
+    if (strlen($newLastName) == 0) {
+        flash("Please enter a last name");
+        $isValid = false;
+    }
+
     if ($isValid) {
-        $stmt = $db->prepare("UPDATE Users set email = :email, username= :username where id = :id");
-        $r = $stmt->execute([":email" => $newEmail, ":username" => $newUsername, ":id" => get_user_id()]);
+        $stmt = $db->prepare("UPDATE Users set email = :email, username= :username, first_name = :firstname, last_name = :lastname where id = :id");
+        $r = $stmt->execute([":email" => $newEmail, ":username" => $newUsername, ":firstname" => $newFirstName, ":lastname" => $newLastName, ":id" => get_user_id()]);
         if ($r) {
             flash("Updated profile");
         }
@@ -127,6 +157,7 @@ if (isset($_POST["saved"])) {
 
 ?>
 
+<?php if (!$public_profile): ?>
 <form method="POST">
   <h2>Account Info</h2>
   <p>
@@ -137,6 +168,14 @@ if (isset($_POST["saved"])) {
     <label for="username">Username</label>
     <input type="text" maxlength="60" name="username" value="<?php safer_echo(get_username()); ?>"/>
   </p>
+    <p>
+        <label for="first_name">First Name</label>
+        <input type="text" maxlength="30" name="first_name" value="<?php echo get_firstname(get_user_id()); ?>"/>
+    </p>
+    <p>
+        <label for="last_name">Last Name</label>
+        <input type="text" maxlength="30" name="last_name" value="<?php echo get_lastname(get_user_id()); ?>"/>
+    </p>
   <h2>Password Reset</h2>
   <p>
     <label for="opw">Current Password</label>
@@ -153,4 +192,11 @@ if (isset($_POST["saved"])) {
   </p>
     <input type="submit" name="saved" value="Save Profile"/>
 </form>
+<?php else: ?>
+    <h2>Account Info</h2>
+    <p><b>Username: </b><?php safer_echo($user_info["username"]); ?></p>
+    <p><b>Name: </b><?php safer_echo($user_info["first_name"]); ?> <?php safer_echo($user_info["last_name"]); ?></p>
+    <p><b>Account Created: </b><?php safer_echo($user_info["created"]); ?></p>
+<?php endif; ?>
+
 <?php require(__DIR__ . "/partials/flash.php");
