@@ -75,6 +75,11 @@ div.list-group-item {
     margin: 10px;
 }
 
+ul .list-group-item {
+    width: fit-content;
+    background-color: #ebbbf3;
+}
+
 div.quantity {
     width: 80px;
     height: fit-content;

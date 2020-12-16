@@ -20,9 +20,24 @@ if (isset($id)) {
     }
 }
 // pulling all of the reviews
+$per_page = 10;
+
 $db = getDB();
-$stmt = $db->prepare("SELECT u.username, r.user_id, r.rating, r.comment FROM Ratings as r JOIN Users as u on u.id = r.user_id WHERE product_id = :pid LIMIT 10");
-$r = $stmt->execute(["pid" => $id]);
+$query = "SELECT count(*) as total from Ratings as r LEFT JOIN Products as p on p.id = r.product_id where r.product_id = :id";
+$params = [":id"=>$id];
+paginate($query, $params, $per_page);
+//$stmt = $db->prepare("SELECT u.username, r.user_id, r.rating, r.comment FROM Ratings as r JOIN Users as u on u.id = r.user_id WHERE product_id = :pid LIMIT 10");
+//$r = $stmt->execute(["pid" => $id]);
+//$product_ratings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$stmt = $db->prepare("SELECT u.username, r.user_id, r.rating, r.comment FROM Ratings as r JOIN Users as u on u.id = r.user_id WHERE product_id = :pid LIMIT :offset, :count");
+$stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+$stmt->bindValue(":count", $per_page, PDO::PARAM_INT);
+$stmt->bindValue(":pid", $id);
+$stmt->execute();
+$e = $stmt->errorInfo();
+if($e[0] != "00000"){
+    flash(var_export($e, true), "alert");
+}
 $product_ratings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $stmt = $db->prepare("SELECT ROUND(AVG(rating), 2) as average FROM Ratings WHERE product_id = :pid");
@@ -71,6 +86,9 @@ $average_rating = $result1["average"];
 
             <?php endforeach; ?>
             </div>
+        </div>
+        <?php include(__DIR__."/partials/pagination.php");?>
+        </div>
         <?php else: ?>
             <p>No reviews yet.</p>
         <?php endif; ?>
@@ -139,7 +157,6 @@ if (isset($_POST["rate"])) { // if ratings is filled out
         $r = $stmt->execute([":pid" => $_GET["id"], ":uid" => get_user_id(), ":rating" => $rating, ":comment" => $comment]);
         if ($r) {
             $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            die(header("Location: view_product.php?id=" . $id));
         }
         else {
             flash("There was a problem submitting review");
