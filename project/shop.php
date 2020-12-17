@@ -7,7 +7,6 @@ $per_page = 10;
 
 $db = getDB();
 $pag_query = (has_role("Admin"))?"SELECT count(*) as total from Products WHERE ":"SELECT count(*) as total from Products WHERE visibility = '1' AND quantity > '0' AND ";
-
 $query = "";
 $results = [];
 $categories = getCategories();
@@ -15,9 +14,11 @@ if (isset($_POST["query"])) {
     $query = $_POST["query"];
 }
 $lookup_query = (has_role("Admin"))?"SELECT id,name,quantity,price,description,visibility,user_id from Products WHERE ":"SELECT id,name,quantity,price,description,visibility,user_id from Products WHERE visibility = '1' AND quantity > '0' AND ";
-$asc_query = "ORDER BY price ASC LIMIT 10";
-$desc_query = "ORDER BY price DESC LIMIT 10";
+$asc_query = "ORDER BY price ASC ";
+$desc_query = "ORDER BY price DESC ";
 $limit_query = "LIMIT :offset, :count";
+$category = null;
+$sort = null;
 if (empty($query)) { // show all products initially
     $db = getDB();
     if (isset($_POST["category"])) {
@@ -153,23 +154,29 @@ else if (isset($_POST["search"])) { // if search is filled out
     else {
         flash("There was a problem fetching the results");
     }
+    if (isset($_POST["category"])) {
+        $category = $_POST["category"];
+    }
+    if (isset($_POST["sort"])) {
+        $sort = $_POST["sort"];
+    }
 }
 ?>
     <form method="POST">
         <input name="query" placeholder="Search" value="<?php safer_echo($query); ?>"/>
         <label>Category:</label>
         <select name="category" value="" >
-            <option value="">None</option>
+            <option value="" <?php echo (isset($_POST["category"]))?(($_POST["category"]=="")?"selected":""):""?>>None</option>
             <?php foreach ($categories as $cat): ?>
-                <option value="<?php safer_echo($cat["category"]); ?>"><?php safer_echo($cat["category"]); ?></option>
+                <option value="<?php safer_echo($cat["category"]); ?>" <?php echo (isset($_POST["category"]))?(($_POST["category"]==$cat["category"])?"selected":""):""?>><?php safer_echo($cat["category"]); ?></option>
             <?php endforeach; ?>
         </select>
         <div>
             <label>Sort by price:</label>
             <select name="sort" value="">
-                <option value ="">Best Match</option>
-                <option value ="asc">Low to High</option>
-                <option value ="desc">High to Low</option>
+                <option value ="" <?php echo (isset($_POST["sort"]))?(($_POST["sort"]=="")?"selected":""):""?>>Best Match</option>
+                <option value ="asc" <?php echo (isset($_POST["sort"]))?(($_POST["sort"]=="asc")?"selected":""):""?>>Low to High</option>
+                <option value ="desc" <?php echo (isset($_POST["sort"]))?(($_POST["sort"]=="desc")?"selected":""):""?>>High to Low</option>
             </select>
         </div>
         <input type="submit" value="Search" name="search"/>
