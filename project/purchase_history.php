@@ -31,7 +31,7 @@ flash(var_dump($_POST));
 flash(var_dump($_SESSION['category']));
 flash(var_dump($_SESSION['start']));
 flash(var_dump($_SESSION['end']));
- */
+*/
 $category = null;
 $start = null;
 $end = null;
