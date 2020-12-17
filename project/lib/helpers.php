@@ -36,6 +36,13 @@ function get_lastname($id) {
     $item = $stmt->fetch(PDO::FETCH_ASSOC);
     return $item["last_name"];
 }
+function get_profile_visibility($id) {
+    $db = getDB();
+    $stmt = $db->prepare("SELECT visibility from Users where id = :id");
+    $result = $stmt->execute([":id" => $id]);
+    $item = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $item["visibility"];
+}
 
 function get_username_from_id($id) {
     $db = getDB();
