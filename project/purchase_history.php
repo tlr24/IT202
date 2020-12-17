@@ -9,10 +9,13 @@ if (!is_logged_in()) {
 }
 
 $db = getDB();
+$per_page = 10;
 $categories = getCategories();
 $user_query = "SELECT o.id, o.user_id, o.created, oi.product_id, oi.quantity, oi.unit_price, (oi.unit_price * oi.quantity) as sub FROM Orders as o JOIN OrderItems as oi on oi.order_id = o.id LEFT JOIN Products as p on p.id = oi.product_id WHERE o.user_id = :id";
 $admin_query = "SELECT o.id, o.user_id, o.created, oi.product_id, oi.quantity, oi.unit_price, (oi.unit_price * oi.quantity) as sub FROM Orders as o JOIN OrderItems as oi on oi.order_id = o.id LEFT JOIN Products as p on p.id = oi.product_id";
-$limit_query = " LIMIT 10";
+$limit_query = " LIMIT :offset, :count";
+$pag_query = (has_role("Admin"))?"SELECT count(*) as total from OrdersItems ":"SELECT count(*) as total from OrderItems as oi JOIN Orders as o WHERE user_id = :id AND o.id = oi.order_id ";
+$params = (has_role("Admin"))?[]:[":id"=>get_user_id()];
 $stmt = $db->prepare(has_role("Admin")?$admin_query.$limit_query:$user_query.$limit_query);
 $stmt->execute([":id"=>get_user_id()]);
 $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -36,23 +39,32 @@ if (isset($_POST["search"])) {
         if ($start && $end) {
             $between_query = " oi.created BETWEEN DATE('". $start. "') AND DATE('". $end . "')";
             if ($category == "") {
-                $stmt = $db->prepare($admin_query." WHERE ".$between_query." LIMIT 10");
-                $params = [];
+                $stmt = $db->prepare(has_role("Admin")?$admin_query." WHERE ".$between_query.$limit_query:$user_query." AND ".$between_query.$limit_query);
+                $params = has_role("Admin")?[]:[":id"=>get_user_id()];
+                $pag_query .= $between_query;
             }
             else {
-                $stmt = $db->prepare($admin_query." WHERE category=:category AND " . $between_query."LIMIT 10");
-                $params = [":category"=>$category];
+                $stmt = $db->prepare(has_role("Admin")?$admin_query." WHERE category=:category AND " . $between_query.$limit_query:$user_query." AND category=:category AND ".$between_query.$limit_query);
+                $params = has_role("Admin")?[":category"=>$category]:[":id"=>get_user_id(), ":category"=>$category];
+                $stmt->bindValue(":category", $category);
+                $pag_query .= " category=:category AND ".$between_query;
             }
+            if (!has_role("Admin")) {
+                $stmt->bindValue(":id", get_user_id());
+            }
+            paginate($pag_query, $params, $per_page);
+            $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+            $stmt->bindValue(":count", $per_page, PDO::PARAM_INT);
             $stmt->execute($params);
         }
         else {
             if ($category == "") {
-                $stmt = $db->prepare($admin_query." LIMIT 10");
-                $params = [];
+                $stmt = $db->prepare(has_role("Admin")?$admin_query." LIMIT 10":$user_query." LIMIT 10");
+                $params = has_role("Admin")?[]:[":id"=>get_user_id()];
             }
             else {
-                $stmt = $db->prepare($admin_query." WHERE category=:category LIMIT 10");
-                $params = [":category"=>$category];
+                $stmt = $db->prepare(has_role("Admin")?$admin_query." WHERE category=:category ".$limit_query:$user_query." AND category=:category ".$limit_query);
+                $params = has_role("Admin")?[":category"=>$category]:[":id"=>get_user_id(), ":category"=>$category];
             }
             $stmt->execute($params);
         }
@@ -63,7 +75,6 @@ if (isset($_POST["search"])) {
 
 ?>
 
-<?php if (has_role("Admin")): ?>
 <form method="POST">
     <label>Category:</label>
     <select name="category" value="" >
@@ -80,7 +91,6 @@ if (isset($_POST["search"])) {
     </div>
     <input type="submit" value="Search" name="search"/>
 </form>
-<?php endif; ?>
 
 <div class="container-fluid">
     <div class="list-group">
