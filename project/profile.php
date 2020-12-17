@@ -2,14 +2,6 @@
 <title>Profile</title>
 <h1>Profile</h1>
 <?php
-//Note: we have this up here, so our update happens before our get/fetch
-//that way we'll fetch the updated data and have it correctly reflect on the form below
-//As an exercise swap these two and see how things change
-if (!is_logged_in()) {
-    //this will redirect to login and kill the rest of this script (prevent it from executing)
-    flash("You must be logged in to access this page");
-    die(header("Location: login.php"));
-}
 
 $db = getDB();
 
@@ -35,6 +27,13 @@ if (isset($_GET["id"])) {
                 die(header("Location: home.php"));
             }
         }
+    }
+}
+else {
+    if (!is_logged_in()) {
+        //this will redirect to login and kill the rest of this script (prevent it from executing)
+        flash("You must be logged in to access this page");
+        die(header("Location: login.php"));
     }
 }
 
