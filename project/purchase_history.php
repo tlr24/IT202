@@ -21,12 +21,9 @@ if (isset($_POST["search"])) {
     $start = null;
     $end = null;
     $isValid = true;
-    if (!isset($_POST["category"])) {
-        $isValid = false;
-    }
     // if one of the dates are entered but the other isn't, it's invalid
-    if ((!isset($_POST["start"]) && isset($_POST["end"])) || (isset($_POST["start"]) && !isset($_POST["end"]))) {
-        flash("Please enter start and end date");
+    if (($_POST["start"]=="" && $_POST["end"]!="") || ($_POST["start"]!="" && $_POST["end"]=="")) {
+        //flash("Please enter start and end date");
         $isValid = false;
     }
     else {
@@ -37,25 +34,25 @@ if (isset($_POST["search"])) {
 
     if ($isValid) {
         if ($start && $end) {
-            $between_query = " oi.created BETWEEN DATE('". $start. "') AND DATE('". $end . "') ";
+            $between_query = " oi.created BETWEEN DATE('". $start. "') AND DATE('". $end . "')";
             if ($category == "") {
-                $stmt = $db->prepare(has_role("Admin")?$admin_query." WHERE ".$between_query." LIMIT 10":$user_query." AND ".$between_query." LIMIT 10");
-                $params = has_role("Admin")?[]:[":id"=>get_user_id()];
+                $stmt = $db->prepare($admin_query." WHERE ".$between_query." LIMIT 10");
+                $params = [];
             }
             else {
-                $stmt = $db->prepare(has_role("Admin")?$admin_query." WHERE category=:category AND " . $between_query."LIMIT 10":$user_query." AND category=:category AND ".$between_query. "LIMIT 10");
-                $params = has_role("Admin")?[":category"=>$category]:[":id"=>get_user_id(), ":category"=>$category];
+                $stmt = $db->prepare($admin_query." WHERE category=:category AND " . $between_query."LIMIT 10");
+                $params = [":category"=>$category];
             }
             $stmt->execute($params);
         }
         else {
             if ($category == "") {
-                $stmt = $db->prepare(has_role("Admin")?$admin_query." LIMIT 10":$user_query." LIMIT 10");
-                $params = has_role("Admin")?[]:[":id"=>get_user_id()];
+                $stmt = $db->prepare($admin_query." LIMIT 10");
+                $params = [];
             }
             else {
-                $stmt = $db->prepare(has_role("Admin")?$admin_query." WHERE category=:category LIMIT 10":$user_query." AND category=:category LIMIT 10");
-                $params = has_role("Admin")?[":category"=>$category]:[":id"=>get_user_id(), ":category"=>$category];
+                $stmt = $db->prepare($admin_query." WHERE category=:category LIMIT 10");
+                $params = [":category"=>$category];
             }
             $stmt->execute($params);
         }
@@ -66,6 +63,7 @@ if (isset($_POST["search"])) {
 
 ?>
 
+<?php if (has_role("Admin")): ?>
 <form method="POST">
     <label>Category:</label>
     <select name="category" value="" >
@@ -75,12 +73,14 @@ if (isset($_POST["search"])) {
         <?php endforeach; ?>
     </select>
     <div>
-        <label>Date Range:</label>
+        <label>Start:</label>
         <input type="date" name="start">
+        <label>End:</label>
         <input type="date" name="end">
     </div>
     <input type="submit" value="Search" name="search"/>
 </form>
+<?php endif; ?>
 
 <div class="container-fluid">
     <div class="list-group">
