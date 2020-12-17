@@ -22,9 +22,10 @@ $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <?php foreach($result as $r): ?>
             <?php $user_id = $r["user_id"]; ?>
             <?php $username = get_username($user_id); ?>
+            <?php $profile_link = "profile.php?id=" . $user_id;?>
             <div class="list-group-item">
                 <h3><b><?php safer_echo(getProductName($r["product_id"])); ?></b></h3>
-                <?php if(has_role("Admin")):?><div><b>User: </b><?php safer_echo(get_username_from_id($r["user_id"])); ?></div><?php endif; ?>
+                <?php if(has_role("Admin")):?><div><b>User: </b><a href=<?php echo $profile_link?>><?php echo $username;?></a></div><?php endif; ?>
                 <button type="button" onClick="document.location.href='view_product.php?id=<?php safer_echo($r["product_id"]); ?>'">View</button>
                 <div><b>Date: </b><?php safer_echo($r["created"]); ?></div>
                 <div><b>Order: </b>#<?php safer_echo($r["id"]); ?></div>
