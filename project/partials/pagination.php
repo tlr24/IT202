@@ -12,6 +12,18 @@ if(isset($id)){
 else {
     $addition = "";
 }
+if (isset($_SESSION['category'])) {
+    $category = $_SESSION['category'];
+    $addition .= "category=".$category."&";
+}
+if (isset($_SESSION['start'])) {
+    $start = $_SESSION['start'];
+    $addition .= "start=".$start."&";
+}
+if (isset($_SESSION['end'])) {
+    $end = $_SESSION['end'];
+    $addition .= "end=".$end."&";
+}
 
 ?>
 <?php if(isset($page) && isset($total_pages)):?>
