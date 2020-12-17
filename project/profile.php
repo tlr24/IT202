@@ -17,7 +17,7 @@ $public_profile = false;
 // get id of user profile
 if (isset($_GET["id"])) {
     $id = $_GET["id"];
-    $stmt = $db->prepare("SELECT username, first_name, last_name, CAST(created AS DATE) as created, visibility from Users where id = :id");
+    $stmt = $db->prepare("SELECT id, username, first_name, last_name, CAST(created AS DATE) as created, visibility from Users where id = :id");
     $stmt->execute([":id" => $id]);
     $user_info = $stmt->fetch(PDO::FETCH_ASSOC);
     if ($user_info) {
@@ -25,8 +25,15 @@ if (isset($_GET["id"])) {
             $public_profile = true;
         }
         else {
-            flash("Cannot access page, user account is private");
-            die(header("Location: home.php"));
+            // if the profile is private but the user is the one logged in, they can see their own profile page
+            if (get_user_id() == $user_info["id"]) {
+                $public_profile = true;
+            }
+            // if the user is private, others can't see the profile page
+            else {
+                flash("Cannot access page, user account is private");
+                die(header("Location: home.php"));
+            }
         }
     }
 }
