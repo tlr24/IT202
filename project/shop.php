@@ -5,7 +5,7 @@
 
 $per_page = 10;
 $db = getDB();
-$pag_query = (has_role("Admin"))?"SELECT count(*) as total from Products WHERE ":"SELECT count(*) as total from Products WHERE visibility = '1' AND quantity > '0' AND ";
+$pag_query = (has_role("Admin"))?"SELECT count(*) as total from Products as p WHERE ":"SELECT count(*) as total from Products as p WHERE visibility = '1' AND quantity > '0' AND ";
 $query = "";
 $results = [];
 $categories = getCategories();
