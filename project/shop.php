@@ -4,7 +4,6 @@
 <?php
 
 $per_page = 10;
-
 $db = getDB();
 $pag_query = (has_role("Admin"))?"SELECT count(*) as total from Products WHERE ":"SELECT count(*) as total from Products WHERE visibility = '1' AND quantity > '0' AND ";
 $query = "";
@@ -19,15 +18,16 @@ if (isset($_POST["quan"])) {
 else {
     $quan = "99999999";
 }
-$lookup_query = (has_role("Admin"))?"SELECT id,name,quantity,price,description,visibility,user_id from Products WHERE ":"SELECT id,name,quantity,price,description,visibility,user_id from Products WHERE visibility = '1' AND quantity > '0' AND ";
-$asc_query = "ORDER BY price ASC ";
-$desc_query = "ORDER BY price DESC ";
-$limit_query = "LIMIT :offset, :count";
+$lookup_query = (has_role("Admin"))?"SELECT p.id,p.name,p.quantity,p.price,p.description,p.visibility,p.user_id,AVG(IFNULL(r.rating,0)) as rating from Products as p LEFT JOIN Ratings as r ON p.id = r.product_id WHERE ":"SELECT p.id,p.name,p.quantity,p.price,p.description,p.visibility,p.user_id,AVG(IFNULL(r.rating,0)) as rating from Products as p LEFT JOIN Ratings as r ON p.id = r.product_id WHERE visibility = '1' AND quantity > '0' AND ";
+$asc_query = " ORDER BY price ASC ";
+$desc_query = " ORDER BY price DESC ";
+$limit_query = " LIMIT :offset, :count";
+$groupby_query = " GROUP by p.id ";
 $category = null;
 $sort = null;
 $quan = "99999999";
+$sortedByPrice = false;
 if (empty($query)) { // show all products initially
-    $db = getDB();
     if (isset($_POST["quan"])) {
         if ($_POST['quan'] == "") {
             $quan ='99999999';
@@ -42,19 +42,33 @@ if (empty($query)) { // show all products initially
     if (isset($_POST["category"])) {
         $curr_category = $_POST["category"];
         if ($curr_category != "") { // if the query is empty but a category is chosen
+            $lookup_query .= has_role("Admin")?" p.quantity <=:quantity AND category=:category ".$groupby_query:"category=:category ".$groupby_query;
             switch ($_POST["sort"]) {
                 case "asc":
-                    $stmt = $db->prepare(has_role("Admin")?$lookup_query . " quantity <=:quantity AND category=:category " . $asc_query . $limit_query:$lookup_query . "category=:category " . $asc_query . $limit_query);
+                    $lookup_query .= $asc_query;
+                    $sortedByPrice = true;
                     break;
                 case "desc":
-                    $stmt = $db->prepare(has_role("Admin")?$lookup_query . " quantity <=:quantity AND category=:category " . $desc_query . $limit_query:$lookup_query . "category=:category " . $desc_query . $limit_query);
+                    $lookup_query .= $desc_query;
+                    $sortedByPrice = true;
                     break;
                 default:
-                    $stmt = $db->prepare(has_role("Admin")?$lookup_query . " quantity <=:quantity AND category=:category " . $limit_query:$lookup_query . "category=:category " . $limit_query);
                     break;
             }
+            switch ($_POST["rate"]) {
+                case "asc":
+                    $lookup_query .= ($sortedByPrice)?", rating asc ":" ORDER BY rating asc ";
+                    break;
+                case "desc":
+                    $lookup_query .= ($sortedByPrice)?", rating desc ":" ORDER BY rating desc ";
+                    break;
+                default:
+                    break;
+            }
+            $lookup_query .= $limit_query;
+            $stmt = $db->prepare($lookup_query);
             $params = (has_role("Admin")?[":quantity"=> $quan, ":category" => $curr_category]:[":category" => $curr_category]);
-            $pag_query .= has_role("Admin")?" quantity <=:quantity AND category=:category ":"category=:category ";
+            $pag_query .= has_role("Admin")?" p.quantity <=:quantity AND category=:category ":"category=:category ";
             paginate($pag_query, $params, $per_page);
             //$r = $stmt->execute([":category" => $curr_category]);
             $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
@@ -66,20 +80,36 @@ if (empty($query)) { // show all products initially
             $r = $stmt->execute();
         }
         else { // if the query is empty and category is not chosen
+            $setup_query = has_role("Admin")?$lookup_query . " p.quantity <=:quantity AND name like :q ".$groupby_query:$lookup_query . " name like :q ".$groupby_query;
             switch ($_POST["sort"]) {
                 case "asc":
-                    $stmt = $db->prepare(has_role("Admin")?$lookup_query . " quantity <=:quantity AND name like :q " . $asc_query . $limit_query:$lookup_query . "name like :q " . $asc_query . $limit_query);
+                    $setup_query .= $asc_query;
+                    $sortedByPrice = true;
                     break;
                 case "desc":
-                    $stmt = $db->prepare(has_role("Admin")?$lookup_query . " quantity <=:quantity AND name like :q " . $desc_query . $limit_query:$lookup_query . "name like :q " . $desc_query . $limit_query);
+                    $setup_query .= $desc_query;
+                    $sortedByPrice = true;
                     break;
                 default:
-                    $stmt = $db->prepare(has_role("Admin")?$lookup_query . " quantity <=:quantity AND name like :q " . $limit_query:$lookup_query . "name like :q " . $limit_query);
                     break;
             }
+            switch ($_POST["rate"]) {
+                case "asc":
+                    $setup_query .= ($sortedByPrice)?", rating ASC ":" ORDER BY rating ASC ";
+                    break;
+                case "desc":
+                    $setup_query .= ($sortedByPrice)?", rating desc ":" ORDER BY rating desc ";
+                    break;
+                default:
+                    break;
+            }
+            $setup_query .= $limit_query;
+            $stmt = $db->prepare($setup_query);
             $params = has_role("Admin")?[":quantity"=> $quan, ":q" => "%$query%"]:[":q" => "%$query%"];
-            $pag_query .= has_role("Admin")?" quantity <=:quantity AND name like :q ":"name like :q ";
+            $pag_query .= has_role("Admin")?" p.quantity <=:quantity AND name like :q ":"name like :q ";
+            flash($pag_query);
             paginate($pag_query, $params, $per_page);
+            flash($total_pages);
             //$r = $stmt->execute([":q" => "%$query%"]);
             $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
             $stmt->bindValue(":count", $per_page, PDO::PARAM_INT);
@@ -91,24 +121,38 @@ if (empty($query)) { // show all products initially
         }
     }
     else { // if query is empty and category isn't set
+        $setup_query = has_role("Admin")?$lookup_query . " p.quantity <=:quantity AND name like :q ".$groupby_query:$lookup_query . " name like :q ".$groupby_query;
         if (isset($_POST["sort"])) { // if price sort is set
             switch ($_POST["sort"]) {
                 case "asc":
-                    $stmt = $db->prepare(has_role("Admin")?$lookup_query . " quantity <=:quantity AND name like :q " . $asc_query . $limit_query:$lookup_query . "name like :q " . $asc_query . $limit_query);
+                    $setup_query .= $asc_query;
+                    $sortedByPrice = true;
                     break;
                 case "desc":
-                    $stmt = $db->prepare(has_role("Admin")?$lookup_query . " quantity <=:quantity AND name like :q " . $desc_query . $limit_query:$lookup_query . "name like :q " . $desc_query . $limit_query);
+                    $setup_query .= $desc_query;
+                    $sortedByPrice = true;
                     break;
                 default:
-                    $stmt = $db->prepare(has_role("Admin")?$lookup_query . " quantity <=:quantity AND name like :q " . $limit_query:$lookup_query . "name like :q " . $limit_query);
+                    break;
+            }
+            switch ($_POST["rate"]) {
+                case "asc":
+                    $setup_query .= ($sortedByPrice)?", rating asc ":" ORDER BY rating asc ";
+                    break;
+                case "desc":
+                    $setup_query .= ($sortedByPrice)?", rating desc ":" ORDER BY rating desc ";
+                    break;
+                default:
                     break;
             }
         } // if price sort isn't set
         else {
-            $stmt = $db->prepare(has_role("Admin")?$lookup_query . " quantity <=:quantity AND name like :q " . $limit_query:$lookup_query . "name like :q " . $limit_query);
+            //$stmt = $db->prepare(has_role("Admin")?$lookup_query . " p.quantity <=:quantity AND name like :q " .$groupby_query. $limit_query:$lookup_query . "name like :q " .$groupby_query. $limit_query);
         }
+        $setup_query .= $limit_query;
+        $stmt = $db->prepare($setup_query);
         $params = has_role("Admin")?[":quantity"=> $quan, ":q" => "%$query%"]:[":q" => "%$query%"];
-        $pag_query .= has_role("Admin")?" quantity <=:quantity AND name like :q ":"name like :q ";
+        $pag_query .= has_role("Admin")?" p.quantity <=:quantity AND name like :q ":"name like :q ";
         paginate($pag_query, $params, $per_page);
         //$r = $stmt->execute([":q" => "%$query%"]);
         $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
@@ -125,6 +169,7 @@ if (empty($query)) { // show all products initially
     }
     else {
         flash("There was a problem fetching the results");
+        flash(var_dump($stmt->errorInfo()));
     }
 }
 else if (isset($_POST["search"])) { // if search is filled out
@@ -141,19 +186,33 @@ else if (isset($_POST["search"])) { // if search is filled out
         $quan = "99999999";
     }
     if ($curr_category == "") { // if no category is chosen
+        $setup_query = has_role("Admin")?$lookup_query . " p.quantity <=:quantity AND name like :q ".$groupby_query:$lookup_query . " name like :q ".$groupby_query;
         switch ($_POST["sort"]) {
             case "asc":
-                $stmt = $db->prepare(has_role("Admin")?$lookup_query . " quantity <= :quantity AND name like :q " . $asc_query . $limit_query:$lookup_query . "name like :q " . $asc_query . $limit_query);
+                $setup_query .= $asc_query;
+                $sortedByPrice = true;
                 break;
             case "desc":
-                $stmt = $db->prepare(has_role("Admin")?$lookup_query . " quantity <= :quantity AND name like :q " . $desc_query . $limit_query:$lookup_query . "name like :q " . $desc_query . $limit_query);
+                $setup_query .= $desc_query;
+                $sortedByPrice = true;
                 break;
             default:
-                $stmt = $db->prepare(has_role("Admin")?$lookup_query . " quantity <= :quantity AND name like :q ". $limit_query:$lookup_query . "name like :q " . $limit_query);
                 break;
         }
+        switch ($_POST["rate"]) {
+            case "asc":
+                $setup_query .= ($sortedByPrice)?", rating asc ":" ORDER BY rating asc ";
+                break;
+            case "desc":
+                $setup_query .= ($sortedByPrice)?", rating desc ":" ORDER BY rating desc ";
+                break;
+            default:
+                break;
+        }
+        $setup_query .= $limit_query;
+        $stmt = $db->prepare($setup_query);
         $params = has_role("Admin")?[":quantity"=> $quan, ":q" => "%$query%"]:[":q" => "%$query%"];
-        $pag_query .= has_role("Admin")?" quantity <= :quantity AND name like :q ":"name like :q ";
+        $pag_query .= has_role("Admin")?" p.quantity <= :quantity AND name like :q ":"name like :q ";
         paginate($pag_query, $params, $per_page);
         //$stmt = $db->prepare($lookup_query . "name like :q " . $asc_query);
         //$r = $stmt->execute([":q" => "%$query%"]);
@@ -166,19 +225,33 @@ else if (isset($_POST["search"])) { // if search is filled out
         $r = $stmt->execute();
     }
     else { // if a category is picked
+        $setup_query = has_role("Admin")?$lookup_query . " p.quantity <= :quantity AND name like :q AND category=:category ".$groupby_query:$lookup_query . "name like :q AND category=:category ".$groupby_query;
         switch ($_POST["sort"]) {
             case "asc":
-                $stmt = $db->prepare(has_role("Admin")?$lookup_query . " quantity <= :quantity AND name like :q AND category=:category " . $asc_query . $limit_query:$lookup_query . "name like :q AND category=:category " . $asc_query . $limit_query);
+                $setup_query .= $asc_query;
+                $sortedByPrice = true;
                 break;
             case "desc":
-                $stmt = $db->prepare(has_role("Admin")?$lookup_query . " quantity <= :quantity AND name like :q AND category=:category " . $desc_query . $limit_query:$lookup_query . "name like :q AND category=:category " . $desc_query . $limit_query);
+                $setup_query .= $desc_query;
+                $sortedByPrice = true;
                 break;
             default:
-                $stmt = $db->prepare(has_role("Admin")?$lookup_query . " quantity <= :quantity AND name like :q AND category=:category " . $limit_query:$lookup_query . "name like :q AND category=:category " . $limit_query);
                 break;
         }
+        switch ($_POST["rate"]) {
+            case "asc":
+                $setup_query .= ($sortedByPrice)?", rating asc ":" ORDER BY rating asc ";
+                break;
+            case "desc":
+                $setup_query .= ($sortedByPrice)?", rating desc ":" ORDER BY rating desc ";
+                break;
+            default:
+                break;
+        }
+        $setup_query .= $limit_query;
+        $stmt = $db->prepare($setup_query);
         $params = has_role("Admin")?[":quantity"=> $quan,":q" => "%$query%", ":category" => $curr_category]:[":q" => "%$query%", ":category" => $curr_category];
-        $pag_query .= has_role("Admin")?" quantity <= :quantity AND name like :q AND category=:category ":"name like :q  AND category=:category ";
+        $pag_query .= has_role("Admin")?" p.quantity <= :quantity AND name like :q AND category=:category ":"name like :q  AND category=:category ";
         paginate($pag_query, $params, $per_page);
         //$stmt = $db->prepare($lookup_query . "name like :q AND category=:category " . $asc_query);
         //$r = $stmt->execute([":q" => "%$query%", ":category" => $curr_category]);
@@ -228,6 +301,14 @@ else if (isset($_POST["search"])) { // if search is filled out
         <label>Sort by max quantity:</label>
         <input type="number" name="quan" placeholder="Quantity" value="<?php isset($_POST['quan'])?safer_echo($_POST['quan']):safer_echo(""); ?>" min="0"/>
         <?php endif; ?>
+        <div>
+            <label>Sort by rating:</label>
+            <select name="rate" value="">
+                <option value ="" <?php echo (isset($_POST["rate"]))?(($_POST["rate"]=="")?"selected":""):""?>>Best Match</option>
+                <option value ="asc" <?php echo (isset($_POST["rate"]))?(($_POST["rate"]=="asc")?"selected":""):""?>>Low to High</option>
+                <option value ="desc" <?php echo (isset($_POST["rate"]))?(($_POST["rate"]=="desc")?"selected":""):""?>>High to Low</option>
+            </select>
+        </div>
         <input type="submit" value="Search" name="search"/>
     </form>
 
