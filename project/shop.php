@@ -107,9 +107,7 @@ if (empty($query)) { // show all products initially
             $stmt = $db->prepare($setup_query);
             $params = has_role("Admin")?[":quantity"=> $quan, ":q" => "%$query%"]:[":q" => "%$query%"];
             $pag_query .= has_role("Admin")?" p.quantity <=:quantity AND name like :q ":"name like :q ";
-            flash($pag_query);
             paginate($pag_query, $params, $per_page);
-            flash($total_pages);
             //$r = $stmt->execute([":q" => "%$query%"]);
             $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
             $stmt->bindValue(":count", $per_page, PDO::PARAM_INT);
@@ -169,7 +167,6 @@ if (empty($query)) { // show all products initially
     }
     else {
         flash("There was a problem fetching the results");
-        flash(var_dump($stmt->errorInfo()));
     }
 }
 else if (isset($_POST["search"])) { // if search is filled out
